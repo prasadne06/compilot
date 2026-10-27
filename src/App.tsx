@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { EvaluationProvider } from './state/EvaluationContext'
 import { AppShell } from './layouts/AppShell'
 import { EvaluateLayout } from './layouts/EvaluateLayout'
@@ -16,11 +16,14 @@ import { SettingsPage } from './pages/Settings'
 import { NotFound } from './pages/NotFound'
 import { ErrorBoundary } from './layouts/ErrorBoundary'
 
+// Hash routing for static hosts that can't rewrite paths (e.g. embedded previews)
+const Router = import.meta.env.VITE_ROUTER === 'hash' ? HashRouter : BrowserRouter
+
 export default function App() {
   return (
     <ErrorBoundary>
     <EvaluationProvider>
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route element={<AppShell />}>
             <Route index element={<Landing />} />
@@ -41,7 +44,7 @@ export default function App() {
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
-      </BrowserRouter>
+      </Router>
     </EvaluationProvider>
     </ErrorBoundary>
   )
