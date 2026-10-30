@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { clsx } from 'clsx'
+import { cn } from '../../lib/cn'
 import { Gauge } from 'lucide-react'
 import type { Confidence, MatchQuality } from '../../types'
 import { Modal } from '../ui'
@@ -12,7 +12,7 @@ const ratingStyle: Record<MatchQuality, string> = {
 const ratingLabel: Record<MatchQuality, string> = { high: 'High', medium: 'Medium', low: 'Low' }
 
 export function RatingPill({ rating }: { rating: MatchQuality }) {
-  return <span className={clsx('inline-flex w-[68px] justify-center rounded-full border px-2 py-0.5 text-[11px] font-semibold', ratingStyle[rating])}>{ratingLabel[rating]}</span>
+  return <span className={cn('inline-flex w-[68px] justify-center rounded-full border px-2 py-0.5 text-[11px] font-semibold', ratingStyle[rating])}>{ratingLabel[rating]}</span>
 }
 
 export function ConfidenceBreakdown({ confidence }: { confidence: Confidence }) {
@@ -47,7 +47,7 @@ export function ConfidenceIndicator({ confidence, variant = 'pill' }: { confiden
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={clsx(
+        className={cn(
           'inline-flex items-center gap-1.5 text-xs font-medium transition-colors',
           variant === 'pill' ? 'rounded-full border border-ink-200 bg-white px-2.5 py-1 text-ink-700 hover:border-ink-300' : 'text-ink-600 underline decoration-ink-300 underline-offset-4 hover:text-ink-900',
         )}

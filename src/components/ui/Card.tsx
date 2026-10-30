@@ -1,8 +1,8 @@
-import { clsx } from 'clsx'
+import { cn } from '../../lib/cn'
 import type { HTMLAttributes, ReactNode } from 'react'
 
 export function Card({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={clsx('rounded-2xl border border-ink-200/80 bg-white shadow-card', className)} {...rest} />
+  return <div className={cn('rounded-2xl border border-ink-200/80 bg-white shadow-card', className)} {...rest} />
 }
 
 export function CardHeader({ title, eyebrow, action, description }: { title: ReactNode; eyebrow?: ReactNode; action?: ReactNode; description?: ReactNode }) {
@@ -19,5 +19,5 @@ export function CardHeader({ title, eyebrow, action, description }: { title: Rea
 }
 
 export function Eyebrow({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={clsx('text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-500', className)}>{children}</div>
+  return <div className={cn('text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-500', className)}>{children}</div>
 }

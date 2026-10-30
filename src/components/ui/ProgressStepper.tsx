@@ -1,4 +1,4 @@
-import { clsx } from 'clsx'
+import { cn } from '../../lib/cn'
 import { Check } from 'lucide-react'
 
 export interface Step {
@@ -16,7 +16,7 @@ export function ProgressStepper({ steps, current }: { steps: Step[]; current: nu
           return (
             <li key={s.label} className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3" aria-current={active ? 'step' : undefined}>
               <span
-                className={clsx(
+                className={cn(
                   'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors',
                   done && 'bg-pine-600 text-white',
                   active && 'bg-ink-900 text-white ring-4 ring-ink-900/10',
@@ -25,10 +25,10 @@ export function ProgressStepper({ steps, current }: { steps: Step[]; current: nu
               >
                 {done ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : i + 1}
               </span>
-              <span className={clsx('hidden truncate text-[13px] font-medium md:block', active ? 'text-ink-900' : done ? 'text-ink-600' : 'text-ink-400')}>
+              <span className={cn('hidden truncate text-[13px] font-medium md:block', active ? 'text-ink-900' : done ? 'text-ink-600' : 'text-ink-400')}>
                 {s.label}
               </span>
-              {i < steps.length - 1 && <span className={clsx('h-px flex-1', done ? 'bg-pine-300' : 'bg-ink-200')} aria-hidden />}
+              {i < steps.length - 1 && <span className={cn('h-px flex-1', done ? 'bg-pine-300' : 'bg-ink-200')} aria-hidden />}
             </li>
           )
         })}

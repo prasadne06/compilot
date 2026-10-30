@@ -1,4 +1,4 @@
-import { clsx } from 'clsx'
+import { cn } from '../../lib/cn'
 import { ShieldCheck } from 'lucide-react'
 
 export const DISCLAIMER_TEXT =
@@ -7,7 +7,7 @@ export const DISCLAIMER_TEXT =
 export function Disclaimer({ variant = 'full', className }: { variant?: 'full' | 'compact'; className?: string }) {
   if (variant === 'compact')
     return (
-      <p className={clsx('flex items-start gap-2 text-xs leading-relaxed text-ink-500', className)}>
+      <p className={cn('flex items-start gap-2 text-xs leading-relaxed text-ink-500', className)}>
         <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
         <span>
           <strong className="font-medium text-ink-700">AI-generated recommendation.</strong> Estimates use illustrative benchmark data and are not a guarantee of
@@ -16,7 +16,7 @@ export function Disclaimer({ variant = 'full', className }: { variant?: 'full' |
       </p>
     )
   return (
-    <aside className={clsx('rounded-2xl border border-ink-200 bg-white/70 p-5', className)} aria-label="Disclaimer">
+    <aside className={cn('rounded-2xl border border-ink-200 bg-white/70 p-5', className)} aria-label="Disclaimer">
       <div className="flex items-start gap-3">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ink-100 text-ink-600">
           <ShieldCheck className="h-4 w-4" aria-hidden />

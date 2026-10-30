@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { clsx } from 'clsx'
+import { cn } from '../../lib/cn'
 import { ChevronDown, Lightbulb, MessageSquareQuote, Repeat } from 'lucide-react'
 import type { PushbackScenario } from '../../types'
 
@@ -14,7 +14,7 @@ export function NegotiationScenario({ scenario, defaultOpen = false }: { scenari
         className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left sm:px-5"
       >
         <span className="text-[15px] font-medium text-ink-900">{scenario.objection}</span>
-        <ChevronDown className={clsx('h-4 w-4 shrink-0 text-ink-400 transition-transform', open && 'rotate-180')} aria-hidden />
+        <ChevronDown className={cn('h-4 w-4 shrink-0 text-ink-400 transition-transform', open && 'rotate-180')} aria-hidden />
       </button>
       {open && (
         <div className="space-y-4 border-t border-ink-100 px-4 pb-5 pt-4 sm:px-5 animate-fadeUp">

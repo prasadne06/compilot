@@ -1,4 +1,4 @@
-import { clsx } from 'clsx'
+import { cn } from '../../lib/cn'
 import { AlertTriangle } from 'lucide-react'
 import type { Compensation, Offer } from '../../types'
 import { formatCurrency, formatPercent } from '../../lib/format'
@@ -7,12 +7,12 @@ import { SourceTag } from './SourceTag'
 
 function Row({ label, value, sub, strong, muted }: { label: string; value: number; sub?: string; strong?: boolean; muted?: boolean }) {
   return (
-    <div className={clsx('flex items-baseline justify-between gap-4 py-2', strong && 'border-t border-ink-200 pt-3')}>
+    <div className={cn('flex items-baseline justify-between gap-4 py-2', strong && 'border-t border-ink-200 pt-3')}>
       <div className="min-w-0">
-        <p className={clsx('text-sm', strong ? 'font-semibold text-ink-900' : muted ? 'text-ink-500' : 'text-ink-700')}>{label}</p>
+        <p className={cn('text-sm', strong ? 'font-semibold text-ink-900' : muted ? 'text-ink-500' : 'text-ink-700')}>{label}</p>
         {sub && <p className="text-xs text-ink-400">{sub}</p>}
       </div>
-      <p className={clsx('shrink-0 tabular', strong ? 'text-base font-semibold text-ink-900' : 'text-sm text-ink-800')}>{formatCurrency(value)}</p>
+      <p className={cn('shrink-0 tabular', strong ? 'text-base font-semibold text-ink-900' : 'text-sm text-ink-800')}>{formatCurrency(value)}</p>
     </div>
   )
 }

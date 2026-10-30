@@ -1,5 +1,5 @@
 import { useRef, useState, type DragEvent } from 'react'
-import { clsx } from 'clsx'
+import { cn } from '../../lib/cn'
 import { AlertTriangle, CircleCheck, FileCheck2, FileText, Lock, Upload } from 'lucide-react'
 import { ACCEPTED_FILE_TYPES, DocumentReadError, extractDocumentText } from '../../services/documents/textExtraction'
 import { extractOfferDetails, getProviderInfo } from '../../services/ai'
@@ -153,7 +153,7 @@ export function OfferUpload({ section, compact = false }: { section: 'profile' |
           onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
-          className={clsx(
+          className={cn(
             'mt-5 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-8 text-center transition-colors focus-within:ring-2 focus-within:ring-pine-500',
             dragging ? 'border-pine-500 bg-pine-50' : 'border-ink-200 bg-ink-50/50 hover:border-ink-300 hover:bg-ink-50',
           )}

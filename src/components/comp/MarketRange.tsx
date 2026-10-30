@@ -1,4 +1,4 @@
-import { clsx } from 'clsx'
+import { cn } from '../../lib/cn'
 import type { MarketRange as Range } from '../../types'
 import { k } from '../../lib/format'
 
@@ -61,7 +61,7 @@ export function MarketRange({ range, markers, compact = false }: { range: Range;
         {markers.map((m) => (
           <div key={m.id} className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2" style={{ left: `${pos(m.value)}%` }} title={`${m.label}: ${k(m.value)}`}>
             {(rows[sorted.indexOf(m)] ?? 0) > 0 && <div className="absolute bottom-3 left-1/2 w-px -translate-x-1/2 bg-ink-300" style={{ height: (rows[sorted.indexOf(m)] ?? 0) * 34 }} />}
-            <div className={clsx('h-3.5 w-3.5 rounded-full ring-[3px] shadow-sm', markerStyle[m.style])} />
+            <div className={cn('h-3.5 w-3.5 rounded-full ring-[3px] shadow-sm', markerStyle[m.style])} />
           </div>
         ))}
       </div>
@@ -77,7 +77,7 @@ export function MarketRange({ range, markers, compact = false }: { range: Range;
           ].map(([l, v]) => (
             <div key={l as string}>
               <dt className="text-[11px] font-medium uppercase tracking-wide text-ink-400">{l}</dt>
-              <dd className={clsx('mt-0.5 text-sm tabular', l === 'Median' ? 'font-semibold text-ink-900' : 'text-ink-700')}>{k(v as number)}</dd>
+              <dd className={cn('mt-0.5 text-sm tabular', l === 'Median' ? 'font-semibold text-ink-900' : 'text-ink-700')}>{k(v as number)}</dd>
             </div>
           ))}
         </dl>
@@ -88,7 +88,7 @@ export function MarketRange({ range, markers, compact = false }: { range: Range;
         <span className="inline-flex items-center gap-1.5"><span className="h-3 w-0.5 rounded-full bg-pine-700" />Median</span>
         {markers.map((m) => (
           <span key={m.id} className="inline-flex items-center gap-1.5">
-            <span className={clsx('h-2.5 w-2.5 rounded-full ring-2', markerStyle[m.style])} />
+            <span className={cn('h-2.5 w-2.5 rounded-full ring-2', markerStyle[m.style])} />
             {m.label}
           </span>
         ))}

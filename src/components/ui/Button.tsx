@@ -1,4 +1,4 @@
-import { clsx } from 'clsx'
+import { cn } from '../../lib/cn'
 import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { Link, type LinkProps } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
@@ -21,7 +21,7 @@ const sizes: Record<Size, string> = {
 }
 
 export function buttonClass(variant: Variant = 'primary', size: Size = 'md', className?: string) {
-  return clsx(base, variants[variant], sizes[size], className)
+  return cn(base, variants[variant], sizes[size], className)
 }
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

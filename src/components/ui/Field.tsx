@@ -1,4 +1,4 @@
-import { clsx } from 'clsx'
+import { cn } from '../../lib/cn'
 import type { ReactNode } from 'react'
 import { Tooltip } from './Tooltip'
 import { Check, CircleCheck, Info, X } from 'lucide-react'
@@ -54,7 +54,7 @@ function AutofillCheck({ autofill, label }: { autofill: FieldAutofill; label: st
 export function Field({ label, htmlFor, hint, error, optional, info, className, autofill, children }: FieldProps) {
   const pending = autofill?.status === 'pending'
   return (
-    <div className={clsx('flex flex-col gap-1.5', className)}>
+    <div className={cn('flex flex-col gap-1.5', className)}>
       <div className="flex items-center gap-1.5">
         <label htmlFor={htmlFor} className="text-[13px] font-medium text-ink-800">
           {label}
@@ -87,7 +87,7 @@ export function Field({ label, htmlFor, hint, error, optional, info, className, 
 }
 
 export const inputClass = (invalid?: boolean, extra?: string) =>
-  clsx(
+  cn(
     'h-11 w-full rounded-lg border bg-white px-3 text-[15px] text-ink-900 placeholder:text-ink-400 transition-colors',
     'focus:outline-none focus:ring-2 focus:ring-pine-500/30 focus:border-pine-500',
     invalid ? 'border-critical-fg/60' : 'border-ink-200 hover:border-ink-300',

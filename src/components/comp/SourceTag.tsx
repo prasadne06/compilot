@@ -1,4 +1,4 @@
-import { clsx } from 'clsx'
+import { cn } from '../../lib/cn'
 import { Calculator, Database, Sparkles, User } from 'lucide-react'
 import { Tooltip } from '../ui'
 
@@ -15,7 +15,7 @@ export function SourceTag({ kind, className, label }: { kind: SourceKind; classN
   const m = META[kind]
   return (
     <Tooltip content={m.tip}>
-      <span className={clsx('inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px] font-medium', m.cls, className)}>
+      <span className={cn('inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px] font-medium', m.cls, className)}>
         <m.Icon className="h-3 w-3" aria-hidden />
         {label ?? m.label}
       </span>

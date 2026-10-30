@@ -1,4 +1,4 @@
-import { clsx } from 'clsx'
+import { cn } from '../../lib/cn'
 import type { ReactNode } from 'react'
 import { AlertOctagon, CheckCircle2, CircleDot, TrendingUp } from 'lucide-react'
 import type { Recommendation, RecommendationState } from '../../types'
@@ -15,7 +15,7 @@ const TONE: Record<RecommendationState, { wrap: string; badge: string; Icon: typ
 export function RecommendationBadge({ state, size = 'md' }: { state: RecommendationState; size?: 'sm' | 'md' }) {
   const t = TONE[state]
   return (
-    <span className={clsx('inline-flex items-center gap-1.5 rounded-full font-semibold', t.badge, size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-3 py-1 text-xs')}>
+    <span className={cn('inline-flex items-center gap-1.5 rounded-full font-semibold', t.badge, size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-3 py-1 text-xs')}>
       <t.Icon className={size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5'} aria-hidden />
       {RECOMMENDATION_COPY[state].title}
     </span>
@@ -25,7 +25,7 @@ export function RecommendationBadge({ state, size = 'md' }: { state: Recommendat
 export function RecommendationCard({ rec, children }: { rec: Recommendation; children?: ReactNode }) {
   const t = TONE[rec.state]
   return (
-    <section className={clsx('rounded-2xl border p-5 sm:p-6', t.wrap)} aria-label="Recommendation">
+    <section className={cn('rounded-2xl border p-5 sm:p-6', t.wrap)} aria-label="Recommendation">
       <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-500">Recommendation</p>
       <div className="mt-2.5"><RecommendationBadge state={rec.state} /></div>
       <p className="mt-3 max-w-2xl text-lg font-medium leading-snug tracking-tight text-ink-900 text-balance">“{rec.headline}”</p>
