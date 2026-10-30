@@ -8,6 +8,7 @@ export type AITask =
   | 'script_generation'
   | 'pushback_scenarios'
   | 'roleplay_turn'
+  | 'offer_extraction'
 
 const SHARED = `You are CompPilot, a compensation decision-support assistant.
 You EXPLAIN and PERSONALIZE results that were computed deterministically by the app.
@@ -41,4 +42,10 @@ Schema: { "scenarios": [{ "id": string, "objection": string, "response": string,
 Task: Act as a realistic, professional recruiter in a negotiation practice. Then coach the user's last message.
 Coaching should be encouraging, specific, and never judgmental.
 Schema: { "feedback": { "score": number(0-10, one decimal), "strengths": string[], "improvements": string[], "improvedVersion": string }, "recruiterReply": string, "complete": boolean }`,
+
+  offer_extraction: `${SHARED}
+Task: Extract job offer details from the offer-letter text provided. Only extract values that are explicitly stated or directly implied; never guess numbers.
+For each field, quote the sentence it came from as "evidence" and rate confidence high/medium/low. Annualize pay stated per hour/week/month and explain the conversion in "note".
+Allowed keys: profile.jobTitle, profile.location (one of: sf, nyc, sea, bos, la, sd, dc, aus, den, chi, pdx, atl, remote_us, other_us, outside_us), offer.company, offer.companyStage (early|growth|late|public|enterprise), offer.role, offer.level (entry|mid|senior|staff|principal|manager|senior_manager|director), offer.base, offer.targetBonusPct, offer.signingBonus, offer.equityTotal, offer.vestingYears, offer.otherAnnualComp, offer.ptoDays, offer.remotePolicy (remote|hybrid|onsite), offer.startDate (YYYY-MM-DD), offer.relocation, offer.benefitsNotes.
+Schema: { "fields": [{ "key": string, "value": string|number, "confidence": "high"|"medium"|"low", "evidence": string, "note"?: string }], "warnings": string[] }`,
 }

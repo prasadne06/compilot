@@ -9,9 +9,10 @@ interface ModalProps {
   description?: string
   children: ReactNode
   footer?: ReactNode
+  size?: 'md' | 'lg'
 }
 
-export function Modal({ open, onClose, title, description, children, footer }: ModalProps) {
+export function Modal({ open, onClose, title, description, children, footer, size = 'md' }: ModalProps) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -39,7 +40,7 @@ export function Modal({ open, onClose, title, description, children, footer }: M
         aria-modal="true"
         aria-labelledby="modal-title"
         tabIndex={-1}
-        className="relative max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-lift outline-none animate-fadeUp sm:max-w-lg sm:rounded-2xl"
+        className={`relative max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white shadow-lift outline-none animate-fadeUp ${size === 'lg' ? 'sm:max-w-3xl' : 'sm:max-w-lg'} sm:rounded-2xl`}
       >
         <div className="sticky top-0 flex items-start justify-between gap-4 border-b border-ink-100 bg-white px-6 py-5">
           <div>
@@ -51,7 +52,7 @@ export function Modal({ open, onClose, title, description, children, footer }: M
           </button>
         </div>
         <div className="px-6 py-5">{children}</div>
-        {footer && <div className="border-t border-ink-100 px-6 py-4">{footer}</div>}
+        {footer && <div className="sticky bottom-0 border-t border-ink-100 bg-white px-6 py-4">{footer}</div>}
       </div>
     </div>,
     document.body,

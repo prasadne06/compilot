@@ -4,6 +4,8 @@ import { Wand2 } from 'lucide-react'
 import { Button, CurrencyInput, Field, Input, NumberInput, Segmented, Select } from '../../components/ui'
 import { Section, StepFrame } from '../../layouts/StepFrame'
 import { useEvaluation } from '../../state/EvaluationContext'
+import { useAutofill } from '../../state/useAutofill'
+import { AutofillNudge, OfferUpload } from '../../components/comp'
 import { validateAboutYou } from '../../engine'
 import {
   ARRANGEMENT_OPTIONS, EMPLOYMENT_OPTIONS, INDUSTRY_OPTIONS, LEVEL_OPTIONS, LOCATION_OPTIONS, TITLE_SUGGESTIONS,
@@ -16,6 +18,8 @@ export function AboutYou() {
   const p = inputs.profile
   const navigate = useNavigate()
   const [attempted, setAttempted] = useState(false)
+  const [nudged, setNudged] = useState(false)
+  const af = useAutofill('profile')
   const { errors, valid } = validateAboutYou(inputs)
   const err = (key: string) => (attempted ? errors[key] : undefined)
 
@@ -33,12 +37,20 @@ export function AboutYou() {
       }
       onNext={() => {
         setAttempted(true)
-        if (valid) navigate('/evaluate/offer')
-        else document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
+        if (!valid) return document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
+        if (af.pending.length && !nudged) {
+          setNudged(true)
+          return window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
+        af.confirmSection()
+        navigate('/evaluate/offer')
       }}
     >
+      {nudged && af.pending.length > 0 && <AutofillNudge count={af.pending.length} onConfirm={af.confirmSection} />}
+      <OfferUpload />
+
       <Section title="Your role">
-        <Field label="Job title" htmlFor="jobTitle" error={err('jobTitle')} className="sm:col-span-2">
+        <Field label="Job title" htmlFor="jobTitle" error={err('jobTitle')} className="sm:col-span-2" autofill={af.status('profile.jobTitle')}>
           <Input id="jobTitle" list="title-suggestions" placeholder="e.g. Senior Product Designer" value={p.jobTitle} invalid={!!err('jobTitle')} onChange={(e) => updateProfile({ jobTitle: e.target.value })} autoComplete="organization-title" />
           <datalist id="title-suggestions">{TITLE_SUGGESTIONS.map((t) => <option key={t} value={t} />)}</datalist>
         </Field>
@@ -57,7 +69,7 @@ export function AboutYou() {
       </Section>
 
       <Section title="Where you work">
-        <Field label="Location" htmlFor="location" error={err('location')} hint="Where the role is based (or your location, if remote)">
+        <Field label="Location" htmlFor="location" error={err('location')} hint="Where the role is based (or your location, if remote)" autofill={af.status('profile.location')}>
           <Select id="location" options={LOCATION_OPTIONS} value={p.location} invalid={!!err('location')} onValueChange={(v) => updateProfile({ location: v })} />
         </Field>
         <Field label="Current work arrangement">

@@ -1,6 +1,6 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
-  ArrowRight, BarChart3, Check, FileText, Gauge, Handshake, MessagesSquare, PlayCircle, Scale, ShieldCheck, Sparkles, Target,
+  ArrowRight, BarChart3, Check, FileText, Gauge, Handshake, MessagesSquare, PlayCircle, Scale, ShieldCheck, Sparkles, Target, Upload,
 } from 'lucide-react'
 import { Button, ButtonLink, Card } from '../components/ui'
 import { MarketRange, Meter, RecommendationBadge } from '../components/comp'
@@ -14,7 +14,7 @@ const sample = analyzeOffer(SAMPLE_PERSONA)
 const JOURNEY = ['Offer', 'Understand', 'Benchmark', 'Evaluate', 'Leverage', 'Recommend', 'Negotiate', 'Practice']
 
 const STEPS = [
-  { icon: FileText, title: 'Share your offer', body: 'Base, bonus, equity, and the things that don’t fit in a spreadsheet — plus what matters most to you.' },
+  { icon: FileText, title: 'Share your offer', body: 'Upload your offer letter (PDF or Word) and check what we find, or enter the details yourself. Then tell us what matters most to you.' },
   { icon: BarChart3, title: 'See where it stands', body: 'An estimated market range, total compensation model, and an offer score — with confidence you can inspect.' },
   { icon: Scale, title: 'Understand your leverage', body: 'A transparent breakdown of what strengthens your position, and what might work against it.' },
   { icon: Target, title: 'Know what to ask for', body: 'A recommended target, range, and fallback — plus which levers to pull first, and which to avoid.' },
@@ -107,9 +107,14 @@ export function Landing() {
               See How It Works
             </a>
           </div>
-          <button onClick={trySample} className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-ink-500 underline decoration-ink-300 underline-offset-4 hover:text-ink-900">
-            <PlayCircle className="h-4 w-4" /> Or explore a sample offer
-          </button>
+          <div className="mt-5 flex flex-col items-start gap-2.5 sm:flex-row sm:items-center sm:gap-6">
+            <Link to="/evaluate/about-you" className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-500 underline decoration-ink-300 underline-offset-4 hover:text-ink-900">
+              <Upload className="h-4 w-4" /> Upload your offer letter to autofill
+            </Link>
+            <button onClick={trySample} className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-500 underline decoration-ink-300 underline-offset-4 hover:text-ink-900">
+              <PlayCircle className="h-4 w-4" /> Or explore a sample offer
+            </button>
+          </div>
           <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-ink-500">
             {['Takes about 4 minutes', 'Your data stays in your browser', 'No sign-up'].map((t) => (
               <li key={t} className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-pine-600" /> {t}</li>

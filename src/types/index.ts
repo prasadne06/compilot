@@ -290,3 +290,43 @@ export interface PracticeSession {
   maxRounds: number
   complete: boolean
 }
+
+// ---------- Offer letter autofill ----------
+
+export type AutofillKey =
+  | 'profile.jobTitle'
+  | 'profile.location'
+  | 'offer.company'
+  | 'offer.companyStage'
+  | 'offer.role'
+  | 'offer.level'
+  | 'offer.base'
+  | 'offer.targetBonusPct'
+  | 'offer.signingBonus'
+  | 'offer.equityTotal'
+  | 'offer.vestingYears'
+  | 'offer.otherAnnualComp'
+  | 'offer.ptoDays'
+  | 'offer.remotePolicy'
+  | 'offer.startDate'
+  | 'offer.relocation'
+  | 'offer.benefitsNotes'
+
+export interface ExtractedField {
+  key: AutofillKey
+  value: string | number
+  confidence: MatchQuality
+  evidence: string // the sentence the value was found in
+  note?: string // e.g. an assumption or conversion we made
+}
+
+export interface OfferExtraction {
+  fields: ExtractedField[]
+  warnings: string[]
+}
+
+export interface AutofillState {
+  fileName: string
+  filledKeys: AutofillKey[] // everything that was filled
+  pendingKeys: AutofillKey[] // filled but not yet checked by the user
+}

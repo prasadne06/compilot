@@ -14,9 +14,20 @@ npm run build    # typecheck + production build
 
 Click **“Or explore a sample offer”** on the landing page to see the full experience with the demo persona (Senior Product Designer, Seattle, $195K offer, $210K written competing offer).
 
+## Offer letter upload
+
+On the first two steps you can upload an offer letter (**PDF** or **Word .docx**, up to 10 MB) instead of typing everything:
+
+1. The file is read **in the browser** (`src/services/documents/textExtraction.ts`, using pdf.js and mammoth, loaded on demand). In mock mode nothing leaves the device; with an AI endpoint configured, only the extracted text is sent.
+2. `extractOfferDetails()` (`src/services/ai/offerExtraction.ts`) returns structured fields. Each one has a confidence rating and the sentence it came from. The mock is a rule-based parser that handles annual, hourly, bi-weekly and monthly pay, "$195K" shorthand, equity value and vesting, PTO, start date, remote policy, location, company stage and benefits.
+3. A review screen shows every value next to its source sentence. The user edits or unticks values, then confirms.
+4. Values the user didn't edit and that weren't high-confidence stay highlighted in the form ("From your letter · check this"). Continuing with unchecked fields asks the user to confirm them first.
+
+Not supported: old `.doc` files and scanned (image-only) PDFs. Both get a clear message suggesting what to do instead. Sample letters for testing are in `public/samples/`.
+
 ## Stack
 
-Vite · React 19 · TypeScript · Tailwind CSS 3 · React Router 6 · lucide-react. No backend; inputs persist in `localStorage`.
+Vite · React 19 · TypeScript · Tailwind CSS 3 · React Router 6 · lucide-react · pdfjs-dist · mammoth. No backend; inputs persist in `localStorage`.
 
 ## Architecture
 
