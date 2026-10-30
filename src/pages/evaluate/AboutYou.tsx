@@ -60,7 +60,7 @@ export function AboutYou() {
         <Field label="Industry" htmlFor="industry">
           <Select id="industry" options={INDUSTRY_OPTIONS} value={p.industry} onValueChange={(v) => updateProfile({ industry: v })} />
         </Field>
-        <Field label="Years of experience" htmlFor="yoe">
+        <Field label="Total years of experience" htmlFor="yoe">
           <NumberInput id="yoe" min={0} max={50} placeholder="e.g. 11" value={p.yearsExperience} onValueChange={(v) => updateProfile({ yearsExperience: v })} />
         </Field>
         <Field label="Years of relevant experience" htmlFor="yre" error={err('yearsRelevant')} info="Years doing work closely related to this role. Used to compare you with the typical range for the level.">
