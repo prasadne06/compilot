@@ -20,8 +20,8 @@ On the first two steps you can upload an offer letter (**PDF** or **Word .docx**
 
 1. The file is read **in the browser** (`src/services/documents/textExtraction.ts`, using pdf.js and mammoth, loaded on demand). In mock mode nothing leaves the device; with an AI endpoint configured, only the extracted text is sent.
 2. `extractOfferDetails()` (`src/services/ai/offerExtraction.ts`) returns structured fields. Each one has a confidence rating and the sentence it came from. The mock is a rule-based parser that handles annual, hourly, bi-weekly and monthly pay, "$195K" shorthand, equity value and vesting, PTO, start date, remote policy, location, company stage and benefits.
-3. A review screen shows every value next to its source sentence. The user edits or unticks values, then confirms.
-4. Values the user didn't edit and that weren't high-confidence stay highlighted in the form ("From your letter · check this"). Continuing with unchecked fields asks the user to confirm them first.
+3. Values go straight into the form. Each filled field shows the sentence it came from, with **Looks right** and **Clear** buttons; editing the value also confirms it. Uncertain values (inferred or converted) are marked "double-check" with the reason.
+4. A panel at the top of each page tracks progress ("3 of 13 confirmed"), offers **Confirm all on this page**, and lists anything the letter didn't state clearly. Continuing with unconfirmed fields shows a reminder. Uploading a different file replaces the earlier values.
 
 Not supported: old `.doc` files and scanned (image-only) PDFs. Both get a clear message suggesting what to do instead. Sample letters for testing are in `public/samples/`.
 

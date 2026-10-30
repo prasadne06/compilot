@@ -41,58 +41,58 @@ export function OfferStep() {
       }}
     >
       {nudged && af.pending.length > 0 && <AutofillNudge count={af.pending.length} onConfirm={af.confirmSection} />}
-      <OfferUpload compact />
+      <OfferUpload section="offer" compact />
 
       <Section title="The role">
-        <Field label="Company" htmlFor="company" autofill={af.status('offer.company')} optional>
+        <Field label="Company" htmlFor="company" autofill={af.field('offer.company')} optional>
           <Input id="company" placeholder="Company name" value={o.company} onChange={(e) => updateOffer({ company: e.target.value })} />
         </Field>
-        <Field label="Company stage" htmlFor="stage" autofill={af.status('offer.companyStage')} info="Stage affects typical equity, bonus and how flexible bands tend to be.">
+        <Field label="Company stage" htmlFor="stage" autofill={af.field('offer.companyStage')} info="Stage affects typical equity, bonus and how flexible bands tend to be.">
           <Select id="stage" options={STAGE_OPTIONS.filter((s) => s.value !== 'unknown')} placeholder="Not sure" value={o.companyStage === 'unknown' ? '' : o.companyStage} onValueChange={(v) => updateOffer({ companyStage: (v || 'unknown') as CompanyStage })} />
         </Field>
-        <Field label="Role title" htmlFor="role" autofill={af.status('offer.role')} hint={inputs.profile.jobTitle && !o.role ? `Defaults to “${inputs.profile.jobTitle}”` : undefined} optional>
+        <Field label="Role title" htmlFor="role" autofill={af.field('offer.role')} hint={inputs.profile.jobTitle && !o.role ? `Defaults to “${inputs.profile.jobTitle}”` : undefined} optional>
           <Input id="role" placeholder={inputs.profile.jobTitle || 'e.g. Senior Product Designer'} value={o.role} onChange={(e) => updateOffer({ role: e.target.value })} />
         </Field>
-        <Field label="Level" htmlFor="olevel" autofill={af.status('offer.level')} optional>
+        <Field label="Level" htmlFor="olevel" autofill={af.field('offer.level')} optional>
           <Select id="olevel" options={LEVEL_OPTIONS} placeholder="Same as current" value={o.level} onValueChange={(v) => updateOffer({ level: v as JobLevel })} />
         </Field>
       </Section>
 
       <Section title="Compensation" description="Annual figures. You can type 195k or 195,000.">
-        <Field label="Base salary" htmlFor="base" autofill={af.status('offer.base')} error={err('base')}>
+        <Field label="Base salary" htmlFor="base" autofill={af.field('offer.base')} error={err('base')}>
           <CurrencyInput id="base" placeholder="195,000" value={o.base} invalid={!!err('base')} onValueChange={(v) => updateOffer({ base: v })} suffix="/ yr" />
         </Field>
-        <Field label="Target bonus" htmlFor="bonus" autofill={af.status('offer.targetBonusPct')} optional error={err('targetBonusPct')} hint={bonusAmt ? `≈ ${formatCurrency(bonusAmt)} per year at target` : 'As a % of base'}>
+        <Field label="Target bonus" htmlFor="bonus" autofill={af.field('offer.targetBonusPct')} optional error={err('targetBonusPct')} hint={bonusAmt ? `≈ ${formatCurrency(bonusAmt)} per year at target` : 'As a % of base'}>
           <NumberInput id="bonus" min={0} max={200} step={0.5} placeholder="15" value={o.targetBonusPct} invalid={!!err('targetBonusPct')} onValueChange={(v) => updateOffer({ targetBonusPct: v })} suffix="%" />
         </Field>
-        <Field label="Equity / RSUs (total grant)" htmlFor="equity" autofill={af.status('offer.equityTotal')} optional hint={annualEquity ? `≈ ${formatCurrency(annualEquity)} per year, estimated` : 'Total value as stated in the offer'}>
+        <Field label="Equity / RSUs (total grant)" htmlFor="equity" autofill={af.field('offer.equityTotal')} optional hint={annualEquity ? `≈ ${formatCurrency(annualEquity)} per year, estimated` : 'Total value as stated in the offer'}>
           <CurrencyInput id="equity" placeholder="120,000" value={o.equityTotal} onValueChange={(v) => updateOffer({ equityTotal: v })} />
         </Field>
-        <Field label="Vesting period" htmlFor="vesting" autofill={af.status('offer.vestingYears')}>
+        <Field label="Vesting period" htmlFor="vesting" autofill={af.field('offer.vestingYears')}>
           <Select id="vesting" options={VESTING_OPTIONS} value={o.vestingYears ? String(o.vestingYears) : ''} placeholder="Select…" onValueChange={(v) => updateOffer({ vestingYears: v ? Number(v) : undefined })} />
         </Field>
-        <Field label="Signing bonus" htmlFor="signing" autofill={af.status('offer.signingBonus')} optional hint="One-time — kept separate from annual comp">
+        <Field label="Signing bonus" htmlFor="signing" autofill={af.field('offer.signingBonus')} optional hint="One-time — kept separate from annual comp">
           <CurrencyInput id="signing" placeholder="0" value={o.signingBonus} onValueChange={(v) => updateOffer({ signingBonus: v })} />
         </Field>
-        <Field label="Other measurable compensation" htmlFor="other" autofill={af.status('offer.otherAnnualComp')} optional hint="e.g. 401(k) match, stipends — annual value">
+        <Field label="Other measurable compensation" htmlFor="other" autofill={af.field('offer.otherAnnualComp')} optional hint="e.g. 401(k) match, stipends — annual value">
           <CurrencyInput id="other" placeholder="0" value={o.otherAnnualComp} onValueChange={(v) => updateOffer({ otherAnnualComp: v })} suffix="/ yr" />
         </Field>
       </Section>
 
       <Section title="Benefits & logistics">
-        <Field label="PTO" htmlFor="pto" autofill={af.status('offer.ptoDays')} optional>
+        <Field label="PTO" htmlFor="pto" autofill={af.field('offer.ptoDays')} optional>
           <NumberInput id="pto" min={0} max={60} placeholder="20" value={o.ptoDays} onValueChange={(v) => updateOffer({ ptoDays: v })} suffix="days" />
         </Field>
-        <Field label="Remote policy" autofill={af.status('offer.remotePolicy')}>
+        <Field label="Remote policy" autofill={af.field('offer.remotePolicy')}>
           <Segmented ariaLabel="Remote policy" options={ARRANGEMENT_OPTIONS} value={o.remotePolicy} onChange={(v) => updateOffer({ remotePolicy: v })} />
         </Field>
-        <Field label="Start date" htmlFor="start" autofill={af.status('offer.startDate')} optional>
+        <Field label="Start date" htmlFor="start" autofill={af.field('offer.startDate')} optional>
           <Input id="start" type="date" value={o.startDate} onChange={(e) => updateOffer({ startDate: e.target.value })} />
         </Field>
-        <Field label="Relocation package" htmlFor="relo" autofill={af.status('offer.relocation')} optional>
+        <Field label="Relocation package" htmlFor="relo" autofill={af.field('offer.relocation')} optional>
           <CurrencyInput id="relo" placeholder="0" value={o.relocation} onValueChange={(v) => updateOffer({ relocation: v })} />
         </Field>
-        <Field label="Other meaningful benefits" htmlFor="benefits" autofill={af.status('offer.benefitsNotes')} optional className="sm:col-span-2">
+        <Field label="Other meaningful benefits" htmlFor="benefits" autofill={af.field('offer.benefitsNotes')} optional className="sm:col-span-2">
           <textarea
             id="benefits"
             rows={3}

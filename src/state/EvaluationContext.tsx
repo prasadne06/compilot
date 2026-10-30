@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { Analysis, AutofillKey, AutofillState, EvaluationInputs, ExtractedField, LeverageInputs, Offer, Priority, UserProfile } from '../types'
+import type { Analysis, AutofillKey, AutofillState, EvaluationInputs, LeverageInputs, Offer, OfferExtraction, Priority, UserProfile } from '../types'
+import { AUTOFILL_FIELDS } from '../data/autofillFields'
 import { EMPTY_INPUTS, SAMPLE_PERSONA } from '../data/samplePersona'
 import { analyzeOffer, isReadyForAnalysis } from '../engine'
 import { buildAIContext, type AIContext } from '../services/ai'
@@ -21,7 +22,8 @@ function load(): Stored {
       const i = parsed.inputs
       return {
         isSample: !!parsed.isSample,
-        autofill: parsed.autofill ?? null,
+        // Older saved shapes lack sources/warnings
+        autofill: parsed.autofill ? { ...parsed.autofill, sources: parsed.autofill.sources ?? {}, warnings: parsed.autofill.warnings ?? [] } : null,
         inputs: {
           profile: { ...EMPTY_INPUTS.profile, ...i.profile },
           offer: { ...EMPTY_INPUTS.offer, ...i.offer },
@@ -44,8 +46,9 @@ interface EvaluationState {
   analysis: Analysis | null
   aiContext: AIContext | null
   autofill: AutofillState | null
-  applyAutofill: (fileName: string, fields: ExtractedField[], pendingKeys: AutofillKey[]) => void
+  applyAutofill: (fileName: string, extraction: OfferExtraction) => void
   confirmAutofill: (keys?: AutofillKey[]) => void
+  clearAutofilledField: (key: AutofillKey) => void
   updateProfile: (patch: Partial<UserProfile>) => void
   updateOffer: (patch: Partial<Offer>) => void
   updateLeverage: (patch: Partial<LeverageInputs>) => void
@@ -56,6 +59,16 @@ interface EvaluationState {
 }
 
 const Ctx = createContext<EvaluationState | null>(null)
+
+function setField(inputs: EvaluationInputs, key: AutofillKey, value: unknown): EvaluationInputs {
+  const [section, prop] = key.split('.') as ['profile' | 'offer', string]
+  return { ...inputs, [section]: { ...inputs[section], [prop]: value } }
+}
+
+function emptyValue(key: AutofillKey): unknown {
+  if (key === 'offer.companyStage') return 'unknown'
+  return ['money', 'percent', 'number'].includes(AUTOFILL_FIELDS[key].kind) ? undefined : ''
+}
 
 export function EvaluationProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState(load)
@@ -88,17 +101,29 @@ export function EvaluationProvider({ children }: { children: ReactNode }) {
     analysis,
     aiContext,
     autofill: state.autofill,
-    applyAutofill: (fileName, fields, pendingKeys) =>
+    applyAutofill: (fileName, { fields, warnings }) =>
       setState((s) => {
-        const profile = { ...s.inputs.profile }
-        const offer = { ...s.inputs.offer }
+        let inputs = s.inputs
+        // Replacing a file: clear values the previous file filled that this one doesn't mention
+        const incoming = new Set(fields.map((f) => f.key))
+        for (const k of s.autofill?.filledKeys ?? []) if (!incoming.has(k)) inputs = setField(inputs, k, emptyValue(k))
+        const sources: AutofillState['sources'] = {}
         for (const f of fields) {
-          const [section, prop] = f.key.split('.') as ['profile' | 'offer', string]
-          ;(section === 'profile' ? (profile as Record<string, unknown>) : (offer as Record<string, unknown>))[prop] = f.value
+          inputs = setField(inputs, f.key, f.value)
+          sources[f.key] = { evidence: f.evidence, confidence: f.confidence, note: f.note }
         }
         const keys = fields.map((f) => f.key)
-        return { inputs: { ...s.inputs, profile, offer }, isSample: false, autofill: { fileName, filledKeys: keys, pendingKeys } }
+        // Every filled value starts unconfirmed; the user confirms it on the form
+        return { inputs, isSample: false, autofill: { fileName, filledKeys: keys, pendingKeys: keys, sources, warnings } }
       }),
+    clearAutofilledField: (key) =>
+      setState((s) => ({
+        ...s,
+        inputs: setField(s.inputs, key, emptyValue(key)),
+        autofill: s.autofill
+          ? { ...s.autofill, filledKeys: s.autofill.filledKeys.filter((k) => k !== key), pendingKeys: s.autofill.pendingKeys.filter((k) => k !== key) }
+          : null,
+      })),
     confirmAutofill: (keys) =>
       setState((s) => (s.autofill ? { ...s, autofill: { ...s.autofill, pendingKeys: keys ? s.autofill.pendingKeys.filter((k) => !keys.includes(k)) : [] } } : s)),
     updateProfile: (p) => patch((i) => ({ ...i, profile: { ...i.profile, ...p } }), false, Object.keys(p).map((k) => `profile.${k}`)),

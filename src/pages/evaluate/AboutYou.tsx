@@ -47,10 +47,10 @@ export function AboutYou() {
       }}
     >
       {nudged && af.pending.length > 0 && <AutofillNudge count={af.pending.length} onConfirm={af.confirmSection} />}
-      <OfferUpload />
+      <OfferUpload section="profile" />
 
       <Section title="Your role">
-        <Field label="Job title" htmlFor="jobTitle" error={err('jobTitle')} className="sm:col-span-2" autofill={af.status('profile.jobTitle')}>
+        <Field label="Job title" htmlFor="jobTitle" error={err('jobTitle')} className="sm:col-span-2" autofill={af.field('profile.jobTitle')}>
           <Input id="jobTitle" list="title-suggestions" placeholder="e.g. Senior Product Designer" value={p.jobTitle} invalid={!!err('jobTitle')} onChange={(e) => updateProfile({ jobTitle: e.target.value })} autoComplete="organization-title" />
           <datalist id="title-suggestions">{TITLE_SUGGESTIONS.map((t) => <option key={t} value={t} />)}</datalist>
         </Field>
@@ -69,7 +69,7 @@ export function AboutYou() {
       </Section>
 
       <Section title="Where you work">
-        <Field label="Location" htmlFor="location" error={err('location')} hint="Where the role is based (or your location, if remote)" autofill={af.status('profile.location')}>
+        <Field label="Location" htmlFor="location" error={err('location')} hint="Where the role is based (or your location, if remote)" autofill={af.field('profile.location')}>
           <Select id="location" options={LOCATION_OPTIONS} value={p.location} invalid={!!err('location')} onValueChange={(v) => updateProfile({ location: v })} />
         </Field>
         <Field label="Current work arrangement">

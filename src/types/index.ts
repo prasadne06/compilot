@@ -325,8 +325,16 @@ export interface OfferExtraction {
   warnings: string[]
 }
 
+export interface AutofillSource {
+  evidence: string
+  confidence: MatchQuality
+  note?: string
+}
+
 export interface AutofillState {
   fileName: string
   filledKeys: AutofillKey[] // everything that was filled
-  pendingKeys: AutofillKey[] // filled but not yet checked by the user
+  pendingKeys: AutofillKey[] // filled but not yet confirmed or edited by the user
+  sources: Partial<Record<AutofillKey, AutofillSource>> // where each value came from
+  warnings: string[] // things the letter didn't state clearly
 }
