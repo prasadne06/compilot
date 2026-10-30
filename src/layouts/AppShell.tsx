@@ -13,7 +13,7 @@ export function AppShell() {
   }, [pathname])
 
   const link = ({ isActive }: { isActive: boolean }) =>
-    clsx('rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors', isActive ? 'text-ink-900 bg-ink-100' : 'text-ink-500 hover:text-ink-900')
+    clsx('rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors sm:px-3', isActive ? 'text-ink-900 bg-ink-100' : 'text-ink-500 hover:text-ink-900')
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -21,9 +21,10 @@ export function AppShell() {
         Skip to content
       </a>
       <header className="sticky top-0 z-40 border-b border-ink-200/70 bg-ink-50/85 backdrop-blur-md">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
           <Logo />
-          <nav className="flex items-center gap-1" aria-label="Main">
+          <nav className="flex items-center gap-0 sm:gap-1" aria-label="Main">
+            <NavLink to="/" end className={link}>Home</NavLink>
             <NavLink to="/evaluate" className={link}>Evaluate</NavLink>
             {ready && <NavLink to="/results" className={link}>Results</NavLink>}
             <NavLink to="/settings" className={link} aria-label="Settings">
