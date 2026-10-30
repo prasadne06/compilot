@@ -124,6 +124,8 @@ export function parseOfferText(text: string): OfferExtraction {
   const companyPatterns: [RegExp, MatchQuality][] = [
     [new RegExp(`[Oo]n behalf of\\s+(${CAP_WORDS})`), 'high'],
     [new RegExp(`(?:[Oo]ffer of employment|[Oo]ffer)\\s+(?:from|with)\\s+(${CAP_WORDS})`), 'high'],
+    // "Acme Corp is pleased to offer you…"
+    [new RegExp(`^(${CAP_WORDS})\\s+(?:is|are)\\s+(?:pleased|delighted|excited|happy|thrilled)\\b`), 'high'],
     [new RegExp(`\\b(?:join|at)\\s+(${CAP_WORDS})(?=[\\s,.!]|$)`), 'medium'],
     [new RegExp(`[Ww]elcome to\\s+(${CAP_WORDS})(?=[\\s,.!]|$)`), 'medium'],
     [new RegExp(`^(${CAP_WORDS}),?\\s+(?:Inc\\.?|LLC|Ltd\\.?|Corp\\.?)`, 'm'), 'medium'],
@@ -133,7 +135,7 @@ export function parseOfferText(text: string): OfferExtraction {
     const m = s?.text.match(re)
     if (s && m) {
       const name = cleanCompany(m[1])
-      if (name.length > 1 && !/^(the|our|a|an|this|your)$/i.test(name)) {
+      if (name.length > 1 && !/^(the|our|a|an|this|your|we|i|you|they|it|he|she)$/i.test(name)) {
         add('offer.company', name, conf, s.text)
         break
       }
@@ -268,8 +270,8 @@ export function parseOfferText(text: string): OfferExtraction {
   const stageRules: [RegExp, CompanyStage][] = [
     [/publicly traded|nasdaq|nyse|public company/, 'public'],
     [/pre-?ipo|late[- ]stage|series [e-h]\b/, 'late'],
-    [/series [c-d]\b|growth[- ]stage/, 'growth'],
-    [/series [ab]\b|seed[- ]stage|early[- ]stage|\bseed\b/, 'early'],
+    [/series [b-d]\b|growth[- ]stage/, 'growth'],
+    [/series a\b|seed[- ]stage|early[- ]stage|\bseed\b/, 'early'],
   ]
   for (const [re, stage] of stageRules) {
     const s = sentences.find((x) => re.test(x.lower))
