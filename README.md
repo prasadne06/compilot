@@ -39,6 +39,8 @@ How it works (`src/services/ai/agent/`):
 - **Offline coach:** everywhere else (local dev, a plain web deploy), or if the viewer declines Claude access, a rule-based coach handles the common requests with the same tools.
 - Replies are checked against product guardrails (`checkConversationalText`). The coach never sets the walk-away number, never suggests bluffing, and never tells the user they must accept or reject.
 - "Use latest terms as my offer" (an explicit user action) re-runs the full evaluation on the newest terms.
+- **One conversation per offer.** The chat and timeline are saved in the browser per offer (`src/state/coachHistory.ts`, last 8 offers). Uploading a letter, loading the sample, clearing data, or changing the company or role starts a new conversation; switching back restores it.
+- **Suggestions fit the offer and the stage** (`suggestions.ts`): before the company responds they cover the opening ask, a competing offer, signing bonus, private equity and walk-away; after a response they cover accepting, replying, and countering. Follow-up suggestions appear after each reply and skip questions already asked.
 
 ## Stack
 

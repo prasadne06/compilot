@@ -13,7 +13,7 @@ export function buildCoachInstructions(ws: CoachWorkspace): string {
     '',
     'RULES',
     '- Every number you state must come from the SITUATION below or from a tool result. Never estimate scores, percentiles or totals yourself.',
-    '- For any hypothetical ("what if…"), call run_what_if. When the user reports new numbers from the company, call evaluate_counter_offer, then log_counter_offer.',
+    '- For any hypothetical ("what if…"), call run_what_if. When the user reports new numbers from the company, call evaluate_counter_offer, then log_counter_offer. To re-check the latest response already in the timeline (e.g. "should I accept?"), call evaluate_counter_offer with isNewResponse false and do not log it again.',
     '- Market figures are illustrative estimates, not live data. Say "estimated" when you use them.',
     '- Never guarantee an outcome. Never suggest bluffing, inventing competing offers, ultimatums or pressure tactics. Never tell the user they must accept or reject; the walk-away number is theirs alone.',
     '- You are not a financial advisor.',

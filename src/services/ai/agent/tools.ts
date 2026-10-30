@@ -74,12 +74,20 @@ export const COACH_TOOLS: CoachTool[] = [
   {
     name: 'evaluate_counter_offer',
     description:
-      'Evaluates terms the COMPANY offered (a counter-offer) against the original offer and the user\'s target, fallback and walk-away. Fields not given keep their latest known value. Returns the numbers plus a rule-based suggested next move (accept, close, counter, pivot or below_walk_away) with reasons and, when relevant, a suggested counter base.',
-    inputSchema: { type: 'object', properties: OFFER_FIELDS },
+      'Evaluates terms the COMPANY offered (a counter-offer) against the original offer and the user\'s target, fallback and walk-away. Fields not given keep their latest known value. Returns the numbers plus a rule-based suggested next move (accept, close, counter, pivot or below_walk_away) with reasons and, when relevant, a suggested counter base. Set isNewResponse to false to re-check the latest response already in the timeline.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ...OFFER_FIELDS,
+        isNewResponse: { type: 'boolean', description: 'true (default) for a new response not yet in the timeline; false to re-evaluate the latest logged response' },
+      },
+    },
     run: (input, ws) => {
       const terms = readTerms(input)
       if (!Object.keys(terms).length) throw new Error('Give at least one number from the company, such as base.')
-      const e = evaluateCounter(ws.inputs, ws.counters, terms)
+      // Re-checking the latest logged response must not count it twice
+      const prior = input.isNewResponse === false ? ws.counters.slice(0, -1) : ws.counters
+      const e = evaluateCounter(ws.inputs, prior, terms)
       return { event: { name: 'evaluate_counter_offer', label: `Evaluated their offer: ${termsLabel(terms)}`, evaluation: e }, result: e }
     },
   },

@@ -11,19 +11,37 @@ interface Stored {
   inputs: EvaluationInputs
   isSample: boolean
   autofill: AutofillState | null
-  counters: CounterOffer[] // the company's responses during the negotiation
+  /** Changes whenever a new offer is started (sample, upload, reset). */
+  sessionId: string
+  /** The company's responses during each offer's negotiation, keyed by offer. */
+  negotiations: Record<string, CounterOffer[]>
+}
+
+const newSessionId = () => Math.random().toString(36).slice(2, 10)
+const slug = (v: string) => v.trim().toLowerCase().replace(/\s+/g, ' ')
+
+/**
+ * Identifies the offer being worked on: a new session, or a different company or role,
+ * is a different offer. Adjusting numbers on the same offer keeps the same key.
+ */
+export function offerKeyOf(sessionId: string, inputs: EvaluationInputs): string {
+  return `${sessionId}:${slug(inputs.offer.company)}|${slug(inputs.offer.role || inputs.profile.jobTitle)}`
 }
 
 function load(): Stored {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
-      const parsed = JSON.parse(raw) as Partial<Stored> & { inputs: EvaluationInputs }
+      const parsed = JSON.parse(raw) as Partial<Stored> & { inputs: EvaluationInputs; counters?: CounterOffer[] }
       // Merge with defaults so older saved shapes don't break the app
       const i = parsed.inputs
+      const sessionId = parsed.sessionId ?? newSessionId()
+      // Older saves kept a single negotiation log; attach it to the current offer
+      const negotiations = parsed.negotiations ?? (parsed.counters?.length ? { [offerKeyOf(sessionId, i)]: parsed.counters } : {})
       return {
         isSample: !!parsed.isSample,
-        counters: parsed.counters ?? [],
+        sessionId,
+        negotiations,
         // Older saved shapes lack sources/warnings
         autofill: parsed.autofill ? { ...parsed.autofill, sources: parsed.autofill.sources ?? {}, warnings: parsed.autofill.warnings ?? [] } : null,
         inputs: {
@@ -38,7 +56,7 @@ function load(): Stored {
   } catch {
     /* storage unavailable or corrupt — start fresh */
   }
-  return { inputs: EMPTY_INPUTS, isSample: false, autofill: null, counters: [] }
+  return { inputs: EMPTY_INPUTS, isSample: false, autofill: null, sessionId: newSessionId(), negotiations: {} }
 }
 
 interface EvaluationState {
@@ -58,6 +76,8 @@ interface EvaluationState {
   setWalkAway: (v: number | undefined) => void
   loadSample: () => void
   reset: () => void
+  /** Identifies the active offer; the coach keeps one conversation per offer. */
+  offerKey: string
   counters: CounterOffer[]
   addCounter: (c: Omit<CounterOffer, 'id' | 'at'>) => CounterOffer
   removeCounter: (id: string) => void
@@ -98,6 +118,14 @@ export function EvaluationProvider({ children }: { children: ReactNode }) {
     }))
   }, [])
 
+  const offerKey = offerKeyOf(state.sessionId, state.inputs)
+  const counters = useMemo(() => state.negotiations[offerKey] ?? [], [state.negotiations, offerKey])
+  const setCounters = (fn: (c: CounterOffer[]) => CounterOffer[]) =>
+    setState((s) => {
+      const key = offerKeyOf(s.sessionId, s.inputs)
+      return { ...s, negotiations: { ...s.negotiations, [key]: fn(s.negotiations[key] ?? []) } }
+    })
+
   const ready = isReadyForAnalysis(state.inputs)
   const analysis = useMemo(() => (ready ? analyzeOffer(state.inputs) : null), [ready, state.inputs])
   const aiContext = useMemo(() => (analysis ? buildAIContext(state.inputs, analysis) : null), [analysis, state.inputs])
@@ -122,7 +150,8 @@ export function EvaluationProvider({ children }: { children: ReactNode }) {
         }
         const keys = fields.map((f) => f.key)
         // Every filled value starts unconfirmed; the user confirms it on the form
-        return { ...s, inputs, isSample: false, autofill: { fileName, filledKeys: keys, pendingKeys: keys, sources, warnings } }
+        // An uploaded letter starts a new offer, with its own coach conversation and timeline
+        return { ...s, inputs, isSample: false, sessionId: newSessionId(), autofill: { fileName, filledKeys: keys, pendingKeys: keys, sources, warnings } }
       }),
     clearAutofilledField: (key) =>
       setState((s) => ({
@@ -139,20 +168,24 @@ export function EvaluationProvider({ children }: { children: ReactNode }) {
     updateLeverage: (p) => patch((i) => ({ ...i, leverage: { ...i.leverage, ...p } })),
     setPriorities: (p) => patch((i) => ({ ...i, priorities: p })),
     setWalkAway: (v) => patch((i) => ({ ...i, walkAway: v }), true),
-    loadSample: () => setState({ inputs: structuredClone(SAMPLE_PERSONA), isSample: true, autofill: null, counters: [] }),
-    reset: () => setState({ inputs: structuredClone(EMPTY_INPUTS), isSample: false, autofill: null, counters: [] }),
-    counters: state.counters,
+    loadSample: () => setState((s) => ({ ...s, inputs: structuredClone(SAMPLE_PERSONA), isSample: true, autofill: null, sessionId: newSessionId() })),
+    reset: () => setState({ inputs: structuredClone(EMPTY_INPUTS), isSample: false, autofill: null, sessionId: newSessionId(), negotiations: {} }),
+    offerKey,
+    counters,
     addCounter: (c) => {
       const entry: CounterOffer = { ...c, id: Math.random().toString(36).slice(2, 10), at: new Date().toISOString() }
-      setState((s) => ({ ...s, counters: [...s.counters, entry] }))
+      setCounters((c) => [...c, entry])
       return entry
     },
-    removeCounter: (id) => setState((s) => ({ ...s, counters: s.counters.filter((c) => c.id !== id) })),
+    removeCounter: (id) => setCounters((c) => c.filter((x) => x.id !== id)),
     adoptLatestTerms: () =>
       setState((s) => {
-        if (!s.counters.length) return s
-        const terms = counterTerms(s.inputs, s.counters.slice(0, -1), s.counters[s.counters.length - 1])
-        return { ...s, inputs: { ...s.inputs, offer: { ...s.inputs.offer, ...terms } }, counters: [] }
+        const key = offerKeyOf(s.sessionId, s.inputs)
+        const log = s.negotiations[key] ?? []
+        if (!log.length) return s
+        const terms = counterTerms(s.inputs, log.slice(0, -1), log[log.length - 1])
+        // Same offer (same company and role), so the coach conversation continues; the timeline restarts
+        return { ...s, inputs: { ...s.inputs, offer: { ...s.inputs.offer, ...terms } }, negotiations: { ...s.negotiations, [key]: [] } }
       }),
   }
 

@@ -1,31 +1,46 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { clsx } from 'clsx'
-import { Bot, CircleHelp, CircleStop, FlaskConical, Handshake, MessageSquarePlus, MessagesSquare, RotateCw, Scale, SendHorizontal, ShieldCheck, Sparkles, User } from 'lucide-react'
+import { Bot, Briefcase, CircleHelp, CircleStop, FlaskConical, Handshake, History, Lightbulb, MessageSquarePlus, MessagesSquare, PenLine, RotateCw, Scale, SendHorizontal, ShieldCheck, Sparkles, User } from 'lucide-react'
 import { useEvaluation } from '../../../state/EvaluationContext'
 import { CoachError, getClaude, runCoach, type CoachEngine, type CoachMessage, type CoachWorkspace } from '../../../services/ai/agent'
+import { coachSuggestions, type SuggestionKind } from '../../../services/ai/agent/suggestions'
+import { loadConversation, saveConversation } from '../../../state/coachHistory'
 import { Button, Card, Tooltip } from '../../../components/ui'
 import { k } from '../../../lib/format'
 import { MiniMarkdown } from './MiniMarkdown'
 import { ToolResult } from './ToolResult'
 import { LogResponseForm, NegotiationTimeline } from './CoachSidebar'
 
-const STORAGE_KEY = 'comppilot:coach:v1'
 const newId = () => Math.random().toString(36).slice(2, 10)
 
-function loadMessages(): CoachMessage[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    const parsed = raw ? (JSON.parse(raw) as CoachMessage[]) : []
-    // A reply that was mid-stream when the page closed is shown as stopped
-    return parsed.map((m) => (m.status === 'thinking' || m.status === 'streaming' ? { ...m, status: 'stopped' } : m))
-  } catch {
-    return []
-  }
+const KIND_ICON: Record<SuggestionKind, typeof Handshake> = {
+  counter: Handshake, what_if: FlaskConical, why: CircleHelp, decide: Scale, draft: PenLine, plan: Lightbulb,
+}
+
+function SuggestionChip({ kind, text, onPick, disabled }: { kind: SuggestionKind; text: string; onPick: (t: string) => void; disabled: boolean }) {
+  const Icon = KIND_ICON[kind]
+  return (
+    <button type="button" onClick={() => onPick(text)} disabled={disabled} className="inline-flex items-center gap-1.5 rounded-full border border-ink-200 bg-white px-3 py-1.5 text-left text-[13px] text-ink-700 shadow-card transition-colors hover:border-pine-300 hover:text-ink-900 disabled:opacity-50">
+      <Icon className="h-3.5 w-3.5 shrink-0 text-pine-600" aria-hidden />
+      {text}
+    </button>
+  )
 }
 
 export function Coach() {
-  const { inputs, analysis, counters, addCounter } = useEvaluation()
-  const [messages, setMessages] = useState<CoachMessage[]>(loadMessages)
+  const { inputs, analysis, counters, addCounter, offerKey } = useEvaluation()
+  // One conversation per offer: switching offers loads that offer's conversation
+  const [conv, setConv] = useState(() => {
+    const messages = loadConversation(offerKey)
+    return { key: offerKey, messages, restored: messages.length > 0 }
+  })
+  if (conv.key !== offerKey) {
+    const restoredMessages = loadConversation(offerKey)
+    setConv({ key: offerKey, messages: restoredMessages, restored: restoredMessages.length > 0 })
+  }
+  const messages = conv.messages
+  const setMessages = (fn: CoachMessage[] | ((m: CoachMessage[]) => CoachMessage[])) =>
+    setConv((c) => ({ ...c, messages: typeof fn === 'function' ? fn(c.messages) : fn }))
   const [draft, setDraft] = useState('')
   const [engine, setEngine] = useState<CoachEngine | 'connecting'>('connecting')
   const [notice, setNotice] = useState<string>()
@@ -41,21 +56,17 @@ export function Coach() {
   }, [])
 
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-40))) } catch { /* ignore */ }
+    saveConversation(conv.key, conv.messages)
     const el = listRef.current
     if (el) el.scrollTop = el.scrollHeight
-  }, [messages])
+  }, [conv])
 
-  const suggestions = useMemo(() => {
-    if (!analysis) return []
-    const r = analysis.recommendation
-    return [
-      { text: `They offered ${k(r.fallback)} base and a $10K signing bonus`, Icon: Handshake },
-      { text: `What if base goes to ${k(r.target)}?`, Icon: FlaskConical },
-      { text: `Why is my leverage ${analysis.leverage.score}?`, Icon: CircleHelp },
-      { text: 'Should I accept the current offer?', Icon: Scale },
-    ]
-  }, [analysis])
+  const asked = useMemo(() => messages.filter((m) => m.role === 'user').map((m) => m.text), [messages])
+  const suggestions = useMemo(
+    () => (analysis ? coachSuggestions(inputs, analysis, counters, asked, messages.length ? 3 : 4) : []),
+    [inputs, analysis, counters, asked, messages.length],
+  )
+  const last = messages[messages.length - 1]
 
   if (!analysis) return null
 
@@ -68,7 +79,7 @@ export function Coach() {
     const history = messages
     const user: CoachMessage = { id: newId(), role: 'user', text: message }
     const reply: CoachMessage = { id: newId(), role: 'assistant', text: '', tools: [], status: 'thinking', engine: useEngine }
-    setMessages((ms) => [...ms, user, reply])
+    setConv((c) => ({ ...c, messages: [...c.messages, user, reply], restored: false }))
     setDraft('')
     const controller = new AbortController()
     ctl.current = controller
@@ -128,11 +139,20 @@ export function Coach() {
             <p className="mt-0.5 text-sm text-ink-500">Tell it what the company said, ask “what if…”, or ask why. Every number comes from CompPilot’s calculations.</p>
           </div>
           {messages.length > 0 && (
-            <Button size="sm" variant="ghost" icon={<MessageSquarePlus className="h-3.5 w-3.5" />} onClick={() => { ctl.current?.abort(); setMessages([]) }} disabled={busy}>
+            <Button size="sm" variant="ghost" icon={<MessageSquarePlus className="h-3.5 w-3.5" />} onClick={() => { ctl.current?.abort(); setConv((c) => ({ ...c, messages: [], restored: false })) }} disabled={busy}>
               New conversation
             </Button>
           )}
         </div>
+        <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-500">
+          <span className="inline-flex items-center gap-1.5">
+            <Briefcase className="h-3.5 w-3.5" aria-hidden />
+            {[inputs.offer.company, inputs.offer.role || inputs.profile.jobTitle, `${k(analysis.compensation.base)} offer`].filter(Boolean).join(' · ')}
+          </span>
+          {conv.restored && messages.length > 0 && (
+            <span className="inline-flex items-center gap-1"><History className="h-3.5 w-3.5" aria-hidden />Earlier conversation about this offer restored</span>
+          )}
+        </p>
         {notice && <p className="mt-3 rounded-lg border border-caution-bd bg-caution-bg px-3 py-2 text-xs text-caution-fg">{notice}</p>}
 
         <Card className="mt-4 overflow-hidden">
@@ -140,14 +160,10 @@ export function Coach() {
             {messages.length === 0 && (
               <div className="py-6 text-center">
                 <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-pine-50 text-pine-700 ring-1 ring-pine-200"><MessagesSquare className="h-5 w-5" aria-hidden /></div>
-                <p className="mt-3 text-sm font-medium text-ink-900">How can I help with your negotiation?</p>
+                <p className="mt-3 text-sm font-medium text-ink-900">How can I help with your {inputs.offer.company ? `${inputs.offer.company} ` : ''}offer?</p>
+                <p className="mt-1 text-xs text-ink-500">{counters.length ? `They’ve responded ${counters.length === 1 ? 'once' : `${counters.length} times`}. Here’s what you might do next.` : 'Suggestions based on your offer and strategy.'}</p>
                 <div className="mx-auto mt-4 flex max-w-xl flex-wrap justify-center gap-2">
-                  {suggestions.map(({ text, Icon }) => (
-                    <button key={text} type="button" onClick={() => send(text)} disabled={engine === 'connecting'} className="inline-flex items-center gap-1.5 rounded-full border border-ink-200 bg-white px-3 py-1.5 text-[13px] text-ink-700 shadow-card transition-colors hover:border-pine-300 hover:text-ink-900 disabled:opacity-50">
-                      <Icon className="h-3.5 w-3.5 shrink-0 text-pine-600" aria-hidden />
-                      {text}
-                    </button>
-                  ))}
+                  {suggestions.map((sg) => <SuggestionChip key={sg.text} {...sg} onPick={send} disabled={engine === 'connecting'} />)}
                 </div>
               </div>
             )}
@@ -194,6 +210,11 @@ export function Coach() {
           </div>
 
           <form className="border-t border-ink-200 bg-white p-3" onSubmit={(e) => { e.preventDefault(); void send(draft) }}>
+            {!busy && last?.role === 'assistant' && last.status === 'done' && suggestions.length > 0 && (
+              <div className="mb-2.5 flex flex-wrap gap-1.5" aria-label="Suggested follow-ups">
+                {suggestions.map((sg) => <SuggestionChip key={sg.text} {...sg} onPick={send} disabled={engine === 'connecting'} />)}
+              </div>
+            )}
             <div className="flex items-end gap-2">
               <label htmlFor="coach-input" className="sr-only">Message the coach</label>
               <textarea

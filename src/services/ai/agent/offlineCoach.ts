@@ -139,6 +139,80 @@ function help(ws: CoachWorkspace): string {
   ].join('\n')
 }
 
+function acceptReply(ws: CoachWorkspace, cb: CoachCallbacks): string {
+  const last = ws.counters[ws.counters.length - 1]
+  if (last) {
+    // Evaluate their latest terms without logging them again
+    const e = callTool('evaluate_counter_offer', { base: last.base, signingBonus: last.signingBonus, equityTotal: last.equityTotal, targetBonusPct: last.targetBonusPct, isNewResponse: false }, ws, cb).evaluation!
+    return counterReply(e, ws).replace('\n\nI added this to your negotiation timeline.', '')
+  }
+  const a = ws.analysis
+  return [
+    `Based on the information provided, your current offer is **${$(a.compensation.base)}** base (about the ${ordinal(a.marketPosition.basePercentile)} percentile), with an offer score of **${a.offerScore.score}/100**.`,
+    '',
+    `CompPilot's recommendation is **${a.recommendation.state}**: consider asking for around ${$(a.recommendation.target)} first. Whether to accept is your decision, and it depends on your alternatives and your walk-away number.`,
+    '',
+    'Once the company responds, tell me what they offered and I’ll evaluate it.',
+  ].join('\n')
+}
+
+function competingAdvice(ws: CoachWorkspace): string {
+  const base = ws.inputs.leverage.competing.base
+  const kind = ws.inputs.leverage.situations.includes('multiple_offers') ? 'other offers' : 'another offer'
+  return [
+    `Mention it once, factually, and pair it with genuine interest in ${ws.inputs.offer.company || 'this role'}. The point is to give context, not to create pressure.`,
+    '',
+    '- Bring it up when you make your ask, not as an opening line.',
+    `- Share the number${base ? ` (${$(base)})` : ''} only if you're comfortable, and only what's true.`,
+    '- Make clear this role is your preference, if it is.',
+    '- Don’t set deadlines or ultimatums you don’t intend to keep.',
+    '',
+    'Draft reply:',
+    `I want to be transparent that I have ${kind}${base ? ` with a base of ${$(base)}` : ''}. ${ws.inputs.offer.company || 'This role'} is my first choice, and I'd love to find a way to make it work. Is there flexibility to get the base closer to ${$(ws.analysis.recommendation.target)}?`,
+  ].join('\n')
+}
+
+function equityAdvice(ws: CoachWorkspace, cb: CoachCallbacks): string {
+  const c = ws.analysis.compensation
+  const ev = callTool('run_what_if', { equityTotal: 0 }, ws, cb).whatIf!
+  return [
+    `The grant is valued at **${$(ws.inputs.offer.equityTotal)}** over ${ws.inputs.offer.vestingYears ?? 4} years, about **${$(c.annualEquity)} a year**. That's the value stated in the offer, not a guaranteed amount.`,
+    '',
+    c.equityIsLiquid
+      ? '- Public-company stock can be sold as it vests, but its value moves with the share price.'
+      : '- Private-company equity usually can’t be sold until an exit (IPO or acquisition), and it could end up worth less, or nothing.',
+    `- If you counted it as zero, total comp would be **${$(ev.after.totalComp)}/yr** and the offer score **${ev.after.offerScore}** instead of ${ev.before.offerScore}.`,
+    '- Worth asking: the number of shares or units, the latest valuation or strike price, the vesting schedule, and whether refresh grants are typical.',
+  ].join('\n')
+}
+
+function signingAdvice(ws: CoachWorkspace): string {
+  const a = ws.analysis
+  const gap = Math.max(5_000, roundTo(Math.max(a.recommendation.target - a.compensation.base, 0), 5_000))
+  const forfeits = (ws.inputs.profile.currentBonus ?? 0) > 0 || (ws.inputs.profile.currentEquity ?? 0) > 0
+  return [
+    `It’s a reasonable ask${ws.inputs.offer.signingBonus ? '' : ', since the offer doesn’t include one'}. Signing bonuses are one-time, so companies often find them easier to approve than a higher base.`,
+    '',
+    `- A natural size is the gap to your target: about **${$(gap)}**.`,
+    forfeits ? '- You’d leave behind bonus or unvested equity at your current job, which is a fair reason to ask.' : '- It works best as a second ask, if base can’t move far.',
+    `- Your strategy has it as the ${a.strategy.fallback.type === 'signing' ? 'fallback' : a.strategy.secondary.type === 'signing' ? 'secondary ask' : 'lever to use if base is fixed'}: lead with ${a.strategy.primary.label.toLowerCase()} first.`,
+  ].join('\n')
+}
+
+function walkAwayAdvice(ws: CoachWorkspace): string {
+  const current = ws.analysis.compensation.currentTotalComp
+  return [
+    'Your walk-away number is personal, so CompPilot won’t pick it for you. Some things that help decide it:',
+    '',
+    `- What you earn today${current ? ` (about ${$(current)} total)` : ''} and what a move would cost you.`,
+    `- Your alternatives${ws.inputs.leverage.competing.base ? `, like your ${$(ws.inputs.leverage.competing.base)} competing offer` : ''}, including staying where you are.`,
+    '- Your budget and how much risk you can take on (for example, equity that may not pay out).',
+    '- How much the role itself matters to you beyond pay.',
+    '',
+    'Once you have a number, set it on the Strategy tab and I’ll compare every response against it.',
+  ].join('\n')
+}
+
 /** Runs one turn of the offline coach. */
 export async function runOfflineCoach(message: string, ws: CoachWorkspace, cb: CoachCallbacks): Promise<string> {
   await new Promise((r) => setTimeout(r, 450))
@@ -148,8 +222,21 @@ export async function runOfflineCoach(message: string, ws: CoachWorkspace, cb: C
   const hypothetical = /what if|what about|how about|suppose|if (i|we|they|the base|base)|would .* change|scenario/.test(m)
   const reported = /(they|recruiter|company|hr|manager|she|he)\b.*\b(offer|came back|counter|said|can do|could do|propos|increas|bump|raise|agreed|meet|revis)|came back|counter-?offer|new offer|revised/.test(m)
 
+  const accepting = /should i (accept|take)|accept (their|the|this|it)|take (their|the|this) offer/.test(m)
   let reply: string
-  if (hasTerms && hypothetical && !reported) {
+  if (accepting && !reported) {
+    reply = acceptReply(ws, cb)
+  } else if (/competing|other offer|another offer/.test(m) && /mention|bring|use|tell|share|raise|leverage|handle/.test(m)) {
+    reply = competingAdvice(ws)
+  } else if (/equity|rsu|stock|options|shares/.test(m) && /worth|value|real|count|risk/.test(m) && !hypothetical) {
+    reply = equityAdvice(ws, cb)
+  } else if (/sign(ing|-on| on)/.test(m) && /should i|ask for|worth asking|is it ok|reasonable/.test(m) && !hypothetical) {
+    reply = signingAdvice(ws)
+  } else if (/walk.?away/.test(m)) {
+    reply = walkAwayAdvice(ws)
+  } else if (!hasTerms && /below market|above market|market|fair|competitive|good offer|underpaid|low ?ball/.test(m)) {
+    reply = explain('market', ws)
+  } else if (hasTerms && hypothetical && !reported) {
     reply = whatIfReply(callTool('run_what_if', terms, ws, cb))
   } else if (hasTerms && (reported || !hypothetical)) {
     const ev = callTool('evaluate_counter_offer', terms, ws, cb)
@@ -158,24 +245,11 @@ export async function runOfflineCoach(message: string, ws: CoachWorkspace, cb: C
   } else if (/\bwhy\b|explain|how (is|was|did)|what does|break ?down/.test(m)) {
     reply = explain(m, ws)
   } else if (/accept|take it|good enough|is (this|it) (good|fair)|should i/.test(m)) {
-    const last = ws.counters[ws.counters.length - 1]
-    if (last) {
-      const e = callTool('evaluate_counter_offer', { base: last.base, signingBonus: last.signingBonus, equityTotal: last.equityTotal, targetBonusPct: last.targetBonusPct }, ws, cb).evaluation!
-      reply = counterReply(e, ws).replace('\n\nI added this to your negotiation timeline.', '')
-    } else {
-      const a = ws.analysis
-      reply = [
-        `Based on the information provided, your current offer is **${$(a.compensation.base)}** base (about the ${ordinal(a.marketPosition.basePercentile)} percentile), with an offer score of **${a.offerScore.score}/100**.`,
-        '',
-        `CompPilot's recommendation is **${a.recommendation.state}**: consider asking for around ${$(a.recommendation.target)} first. Whether to accept is your decision, and it depends on your alternatives and your walk-away number.`,
-        '',
-        'Once the company responds, tell me what they offered and I’ll evaluate it.',
-      ].join('\n')
-    }
+    reply = acceptReply(ws, cb)
   } else if (/draft|write|email|reply|message|what (do|should) i say/.test(m)) {
     const last = ws.counters[ws.counters.length - 1]
     if (last) {
-      const e = COACH_TOOLS.find((t) => t.name === 'evaluate_counter_offer')!.run({ base: last.base, signingBonus: last.signingBonus, equityTotal: last.equityTotal }, ws).event.evaluation!
+      const e = COACH_TOOLS.find((t) => t.name === 'evaluate_counter_offer')!.run({ base: last.base, signingBonus: last.signingBonus, equityTotal: last.equityTotal, targetBonusPct: last.targetBonusPct, isNewResponse: false }, ws).event.evaluation!
       reply = `Here's a reply to their latest offer. ${e.moveLabel}.\n\nDraft reply:\n${draftFor(e, ws)}`
     } else {
       const a = ws.analysis
