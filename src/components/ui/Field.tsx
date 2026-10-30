@@ -1,7 +1,7 @@
 import { clsx } from 'clsx'
 import type { ReactNode } from 'react'
 import { Tooltip } from './Tooltip'
-import { Check, CircleCheck, Info, TriangleAlert, X } from 'lucide-react'
+import { Check, CircleCheck, Info, X } from 'lucide-react'
 import type { MatchQuality } from '../../types'
 
 /** A value filled in from an uploaded offer letter, with where it came from. */
@@ -29,7 +29,6 @@ interface FieldProps {
 /** One-line source + quick confirm for an autofilled field; the source sentence lives in a tooltip. */
 function AutofillCheck({ autofill, label }: { autofill: FieldAutofill; label: string }) {
   const unsure = autofill.confidence !== 'high'
-  const Icon = unsure ? TriangleAlert : Info
   const source = (
     <span className="block space-y-1.5">
       <span className="block font-semibold text-white">{unsure ? 'From your letter · please double-check' : 'From your letter'}</span>
@@ -38,28 +37,16 @@ function AutofillCheck({ autofill, label }: { autofill: FieldAutofill; label: st
     </span>
   )
   return (
-    <div className={clsx('flex items-center justify-between gap-2 rounded-lg border px-2.5 py-1.5', unsure ? 'border-caution-bd bg-caution-bg/50' : 'border-pine-200 bg-pine-50/60')}>
+    <div className="flex items-center gap-3 text-xs">
       <Tooltip content={source}>
-        <Icon className={clsx('h-4 w-4', unsure ? 'text-caution-fg' : 'text-pine-700')} aria-label={`Where ${label} came from${unsure ? ' (please double-check)' : ''}`} />
+        <Info className="h-3.5 w-3.5 text-ink-400 hover:text-ink-700" aria-label={`Where ${label} came from`} />
       </Tooltip>
-      <div className="flex items-center gap-1.5">
-        <button
-          type="button"
-          onClick={autofill.onConfirm}
-          aria-label={`${label} looks right`}
-          className="inline-flex h-6 items-center gap-1 rounded-md bg-ink-900 px-2 text-[11px] font-medium text-white hover:bg-ink-800"
-        >
-          <Check className="h-3 w-3" strokeWidth={2.5} aria-hidden /> Looks right
-        </button>
-        <button
-          type="button"
-          onClick={autofill.onClear}
-          aria-label={`Clear ${label}`}
-          className="inline-flex h-6 items-center gap-1 rounded-md border border-ink-200 bg-white px-2 text-[11px] font-medium text-ink-700 hover:bg-ink-50"
-        >
-          <X className="h-3 w-3" aria-hidden /> Clear
-        </button>
-      </div>
+      <button type="button" onClick={autofill.onConfirm} aria-label={`${label} looks right`} className="inline-flex items-center gap-1 font-medium text-pine-700 hover:text-pine-900 hover:underline">
+        <Check className="h-3 w-3" strokeWidth={2.5} aria-hidden /> Looks right
+      </button>
+      <button type="button" onClick={autofill.onClear} aria-label={`Clear ${label}`} className="inline-flex items-center gap-1 text-ink-500 hover:text-ink-800 hover:underline">
+        <X className="h-3 w-3" aria-hidden /> Clear
+      </button>
     </div>
   )
 }
@@ -85,7 +72,7 @@ export function Field({ label, htmlFor, hint, error, optional, info, className, 
         )}
       </div>
       {pending ? (
-        <div className={clsx('rounded-lg ring-2 ring-offset-1', autofill.confidence === 'high' ? 'ring-pine-200' : 'ring-caution-bd')}>{children}</div>
+        <div className="rounded-lg ring-1 ring-pine-300">{children}</div>
       ) : (
         children
       )}
