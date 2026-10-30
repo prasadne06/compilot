@@ -338,3 +338,56 @@ export interface AutofillState {
   sources: Partial<Record<AutofillKey, AutofillSource>> // where each value came from
   warnings: string[] // things the letter didn't state clearly
 }
+
+// ---------- Negotiation coach ----------
+
+/** A response from the company during the negotiation, as reported by the user. */
+export interface CounterOffer {
+  id: string
+  at: string // ISO timestamp
+  base?: number
+  targetBonusPct?: number
+  signingBonus?: number
+  equityTotal?: number
+  note: string
+}
+
+/** Key numbers for one version of the offer. */
+export interface OfferSnapshot {
+  base: number
+  totalComp: number
+  firstYearTotal: number
+  signingBonus: number
+  annualEquity: number
+  offerScore: number
+  basePercentile: number
+  changeVsCurrent?: number
+  recommendation: RecommendationState
+}
+
+export type CounterMove = 'accept' | 'close' | 'counter' | 'pivot' | 'below_walk_away'
+
+export interface CounterEvaluation {
+  original: OfferSnapshot
+  counter: OfferSnapshot
+  baseIncrease: number
+  totalCompIncrease: number
+  firstYearIncrease: number
+  target: number
+  fallback: number
+  walkAway?: number
+  round: number
+  move: CounterMove
+  moveLabel: string
+  reasons: string[]
+  suggestedCounterBase?: number
+  nextLever?: string
+}
+
+export interface WhatIfResult {
+  changes: string[]
+  before: OfferSnapshot
+  after: OfferSnapshot
+  leverageBefore: number
+  leverageAfter: number
+}

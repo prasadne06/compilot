@@ -1,8 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { Analysis, AutofillKey, AutofillState, EvaluationInputs, LeverageInputs, Offer, OfferExtraction, Priority, UserProfile } from '../types'
+import type { Analysis, AutofillKey, AutofillState, CounterOffer, EvaluationInputs, LeverageInputs, Offer, OfferExtraction, Priority, UserProfile } from '../types'
 import { AUTOFILL_FIELDS } from '../data/autofillFields'
 import { EMPTY_INPUTS, SAMPLE_PERSONA } from '../data/samplePersona'
-import { analyzeOffer, isReadyForAnalysis } from '../engine'
+import { analyzeOffer, counterTerms, isReadyForAnalysis } from '../engine'
 import { buildAIContext, type AIContext } from '../services/ai'
 
 const STORAGE_KEY = 'comppilot:inputs:v1'
@@ -11,6 +11,7 @@ interface Stored {
   inputs: EvaluationInputs
   isSample: boolean
   autofill: AutofillState | null
+  counters: CounterOffer[] // the company's responses during the negotiation
 }
 
 function load(): Stored {
@@ -22,6 +23,7 @@ function load(): Stored {
       const i = parsed.inputs
       return {
         isSample: !!parsed.isSample,
+        counters: parsed.counters ?? [],
         // Older saved shapes lack sources/warnings
         autofill: parsed.autofill ? { ...parsed.autofill, sources: parsed.autofill.sources ?? {}, warnings: parsed.autofill.warnings ?? [] } : null,
         inputs: {
@@ -36,7 +38,7 @@ function load(): Stored {
   } catch {
     /* storage unavailable or corrupt — start fresh */
   }
-  return { inputs: EMPTY_INPUTS, isSample: false, autofill: null }
+  return { inputs: EMPTY_INPUTS, isSample: false, autofill: null, counters: [] }
 }
 
 interface EvaluationState {
@@ -56,6 +58,11 @@ interface EvaluationState {
   setWalkAway: (v: number | undefined) => void
   loadSample: () => void
   reset: () => void
+  counters: CounterOffer[]
+  addCounter: (c: Omit<CounterOffer, 'id' | 'at'>) => CounterOffer
+  removeCounter: (id: string) => void
+  /** Makes the latest negotiated terms the offer being evaluated, and clears the log. */
+  adoptLatestTerms: () => void
 }
 
 const Ctx = createContext<EvaluationState | null>(null)
@@ -83,6 +90,7 @@ export function EvaluationProvider({ children }: { children: ReactNode }) {
 
   const patch = useCallback((fn: (i: EvaluationInputs) => EvaluationInputs, keepSample = false, touched: string[] = []) => {
     setState((s) => ({
+      ...s,
       inputs: fn(s.inputs),
       isSample: keepSample ? s.isSample : false,
       // Editing an autofilled field counts as checking it
@@ -114,7 +122,7 @@ export function EvaluationProvider({ children }: { children: ReactNode }) {
         }
         const keys = fields.map((f) => f.key)
         // Every filled value starts unconfirmed; the user confirms it on the form
-        return { inputs, isSample: false, autofill: { fileName, filledKeys: keys, pendingKeys: keys, sources, warnings } }
+        return { ...s, inputs, isSample: false, autofill: { fileName, filledKeys: keys, pendingKeys: keys, sources, warnings } }
       }),
     clearAutofilledField: (key) =>
       setState((s) => ({
@@ -131,8 +139,21 @@ export function EvaluationProvider({ children }: { children: ReactNode }) {
     updateLeverage: (p) => patch((i) => ({ ...i, leverage: { ...i.leverage, ...p } })),
     setPriorities: (p) => patch((i) => ({ ...i, priorities: p })),
     setWalkAway: (v) => patch((i) => ({ ...i, walkAway: v }), true),
-    loadSample: () => setState({ inputs: structuredClone(SAMPLE_PERSONA), isSample: true, autofill: null }),
-    reset: () => setState({ inputs: structuredClone(EMPTY_INPUTS), isSample: false, autofill: null }),
+    loadSample: () => setState({ inputs: structuredClone(SAMPLE_PERSONA), isSample: true, autofill: null, counters: [] }),
+    reset: () => setState({ inputs: structuredClone(EMPTY_INPUTS), isSample: false, autofill: null, counters: [] }),
+    counters: state.counters,
+    addCounter: (c) => {
+      const entry: CounterOffer = { ...c, id: Math.random().toString(36).slice(2, 10), at: new Date().toISOString() }
+      setState((s) => ({ ...s, counters: [...s.counters, entry] }))
+      return entry
+    },
+    removeCounter: (id) => setState((s) => ({ ...s, counters: s.counters.filter((c) => c.id !== id) })),
+    adoptLatestTerms: () =>
+      setState((s) => {
+        if (!s.counters.length) return s
+        const terms = counterTerms(s.inputs, s.counters.slice(0, -1), s.counters[s.counters.length - 1])
+        return { ...s, inputs: { ...s.inputs, offer: { ...s.inputs.offer, ...terms } }, counters: [] }
+      }),
   }
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>

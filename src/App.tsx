@@ -12,6 +12,7 @@ import { Market } from './pages/results/Market'
 import { Negotiation } from './pages/results/Negotiation'
 import { Scripts } from './pages/results/Scripts'
 import { Practice } from './pages/Practice'
+import { Coach } from './pages/results/coach/Coach'
 import { SettingsPage } from './pages/Settings'
 import { NotFound } from './pages/NotFound'
 import { ErrorBoundary } from './layouts/ErrorBoundary'
@@ -39,6 +40,7 @@ export default function App() {
               <Route path="results/negotiation" element={<Negotiation />} />
               <Route path="results/scripts" element={<Scripts />} />
               <Route path="practice" element={<Practice />} />
+              <Route path="results/coach" element={<Coach />} />
             </Route>
             <Route path="settings" element={<SettingsPage />} />
             <Route path="*" element={<NotFound />} />

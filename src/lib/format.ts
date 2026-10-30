@@ -35,3 +35,12 @@ export function roundTo(value: number, step: number): number {
 export function roundSalary(value: number): number {
   return value >= 100_000 ? roundTo(value, 5_000) : roundTo(value, 1_000)
 }
+
+/** Reads an amount an AI tool or a person typed: 215000, "215,000", "$215K", "1.2m". */
+export function parseAmount(v: unknown): number | undefined {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : undefined
+  if (typeof v !== 'string') return undefined
+  const m = v.trim().toLowerCase().replace(/[$,\s]/g, '').match(/^(\d*\.?\d+)([km])?$/)
+  if (!m) return undefined
+  return Math.round(parseFloat(m[1]) * (m[2] === 'k' ? 1_000 : m[2] === 'm' ? 1_000_000 : 1))
+}

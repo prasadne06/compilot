@@ -31,3 +31,19 @@ export const RISKY_USER_PATTERNS = {
   apologetic: /\b(sorry|i apologi[sz]e|i hate to (ask|bring)|i feel bad|i know this is a lot|if it'?s not too much|i hope this isn'?t)\b/i,
   hedging: /\b(maybe|i guess|kind of|sort of|possibly|just wondering|i was just|i think maybe|not sure if)\b/i,
 }
+
+/**
+ * Checks free-form coach replies. Narrower than checkGuardrails so that responsible
+ * phrasing ("I can't guarantee…", "don't bluff") is not flagged.
+ */
+const CONVERSATION_RULES: { id: string; pattern: RegExp }[] = [
+  { id: 'guarantee', pattern: /\b(i|we) guarantee\b|\bguaranteed to (get|receive|land)\b|\byou will (definitely|certainly) get\b/i },
+  { id: 'deception', pattern: /\b(you should|try to|go ahead and|just|could) (pretend|bluff|lie|make up|fabricate|invent)\b/i },
+  { id: 'coercion', pattern: /\bi know (you|your company) can afford\b|\btake it or leave it\b/i },
+  { id: 'must-decide', pattern: /\byou (must|have to) (reject|decline|turn down|accept)\b/i },
+  { id: 'financial-advice', pattern: /\b(as your financial advisor|this is financial advice)\b/i },
+]
+
+export function checkConversationalText(text: string): string[] {
+  return CONVERSATION_RULES.filter((r) => r.pattern.test(text)).map((r) => r.id)
+}

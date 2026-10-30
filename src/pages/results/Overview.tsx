@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowRight, BarChart3, ChevronDown, FileText, Handshake, MessagesSquare } from 'lucide-react'
+import { ArrowRight, BarChart3, ChevronDown, FileText, Handshake, MessagesSquare, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { clsx } from 'clsx'
 import { useEvaluation } from '../../state/EvaluationContext'
@@ -140,12 +140,13 @@ export function Overview() {
       {/* Next steps */}
       <div>
         <h2 className="text-[15px] font-semibold text-ink-900">Prepare for the conversation</h2>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {[
             { to: '/results/market', icon: BarChart3, t: 'Market benchmark', d: 'Range, percentiles and comp model' },
             { to: '/results/negotiation', icon: Handshake, t: 'Negotiation strategy', d: 'What to ask for, and in what order' },
             { to: '/results/scripts', icon: FileText, t: 'Generate my script', d: 'Call, email and pushback responses' },
             { to: '/practice', icon: MessagesSquare, t: 'Practice negotiating', d: 'Rehearse with an AI recruiter' },
+            { to: '/results/coach', icon: Sparkles, t: 'Negotiation coach', d: 'Ask “what if” and get help with each reply' },
           ].map((x) => (
             <Link key={x.to} to={x.to} className="group rounded-xl border border-ink-200 bg-white p-4 shadow-card transition-all hover:border-ink-300 hover:shadow-lift">
               <div className="flex items-center justify-between">

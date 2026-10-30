@@ -25,6 +25,21 @@ On the first two steps you can upload an offer letter (**PDF** or **Word .docx**
 
 Not supported: old `.doc` files and scanned (image-only) PDFs. Both get a clear message suggesting what to do instead. Sample letters for testing are in `public/samples/`.
 
+## Negotiation coach (agentic)
+
+The **Coach** tab (`/results/coach`) is a chat for the live negotiation:
+
+- **Counter-offers:** tell it what the company came back with (or use the *Log their response* form). It evaluates the new terms against your original offer, target, fallback and walk-away, suggests a next move (accept / one final ask / counter / pivot to other levers) and drafts a reply. Each response is added to a **negotiation timeline**.
+- **What-ifs and "why":** "What if base goes to $215K?", "Why is my leverage 77?". What-ifs never change your saved offer.
+
+How it works (`src/services/ai/agent/`):
+
+- The model only chooses tools and explains. Every number comes from three tools backed by the deterministic engine (`src/engine/negotiation.ts`): `run_what_if`, `evaluate_counter_offer`, `log_counter_offer`. Tool results appear in the chat as **Calculated** cards.
+- **Claude engine:** inside a claude.ai artifact viewer, the app uses the runtime's `sample` capability (Claude with page-defined tools, on the viewer's own Claude account; the viewer is asked once). Instructions plus the user's full situation are sent each turn (`prompt.ts`).
+- **Offline coach:** everywhere else (local dev, a plain web deploy), or if the viewer declines Claude access, a rule-based coach handles the common requests with the same tools.
+- Replies are checked against product guardrails (`checkConversationalText`). The coach never sets the walk-away number, never suggests bluffing, and never tells the user they must accept or reject.
+- "Use latest terms as my offer" (an explicit user action) re-runs the full evaluation on the newest terms.
+
 ## Stack
 
 Vite · React 19 · TypeScript · Tailwind CSS 3 · React Router 6 · lucide-react · pdfjs-dist · mammoth. No backend; inputs persist in `localStorage`.

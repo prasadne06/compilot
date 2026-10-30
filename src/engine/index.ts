@@ -10,6 +10,7 @@ export * from './benchmark'
 export * from './compensation'
 export * from './recommendation'
 export * from './scoring'
+export * from './negotiation'
 
 /** Deterministic analysis pipeline. All math lives here — the AI layer only explains it. */
 export function analyzeOffer(inputs: EvaluationInputs): Analysis {
