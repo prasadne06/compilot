@@ -8,6 +8,7 @@ import { analyzeOffer } from '../engine'
 import { SAMPLE_PERSONA } from '../data/samplePersona'
 import { k } from '../lib/format'
 import { useEvaluation } from '../state/EvaluationContext'
+import { scrollToAnchor } from '../lib/scroll'
 
 const sample = analyzeOffer(SAMPLE_PERSONA)
 
@@ -103,7 +104,7 @@ export function Landing() {
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <ButtonLink to="/evaluate/about-you" size="lg" iconRight={<ArrowRight className="h-4 w-4" />}>Evaluate My Offer</ButtonLink>
-            <a href="#how" className="inline-flex h-12 items-center justify-center rounded-lg border border-ink-200 bg-white px-6 text-[15px] font-medium text-ink-800 shadow-card hover:bg-ink-50">
+            <a href="#how" onClick={scrollToAnchor('how')} className="inline-flex h-12 items-center justify-center rounded-lg border border-ink-200 bg-white px-6 text-[15px] font-medium text-ink-800 shadow-card hover:bg-ink-50">
               See How It Works
             </a>
           </div>

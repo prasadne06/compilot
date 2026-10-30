@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { clsx } from 'clsx'
 import { Settings } from 'lucide-react'
 import { Logo } from './Logo'
+import { scrollToAnchor } from '../lib/scroll'
 import { useEvaluation } from '../state/EvaluationContext'
 
 export function AppShell() {
@@ -17,7 +18,7 @@ export function AppShell() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-3 focus:py-2 focus:shadow-lift">
+      <a href="#main" onClick={scrollToAnchor('main', { focus: true })} className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-3 focus:py-2 focus:shadow-lift">
         Skip to content
       </a>
       <header className="sticky top-0 z-40 border-b border-ink-200/70 bg-ink-50/85 backdrop-blur-md">
@@ -33,7 +34,7 @@ export function AppShell() {
           </nav>
         </div>
       </header>
-      <main id="main" className="flex-1">
+      <main id="main" tabIndex={-1} className="flex-1 outline-none">
         <Outlet />
       </main>
       <footer className="border-t border-ink-200/70">
