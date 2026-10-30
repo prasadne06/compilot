@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { History, Trash2 } from 'lucide-react'
+import { History, NotebookPen, Scale, Trash2 } from 'lucide-react'
 import { useEvaluation } from '../../../state/EvaluationContext'
 import { Button, Card, CurrencyInput, Field, Input, Modal } from '../../../components/ui'
 import { formatCurrency as $, k } from '../../../lib/format'
@@ -19,7 +19,7 @@ export function LogResponseForm({ onSubmit, disabled }: { onSubmit: (message: st
   }
   return (
     <Card className="p-4">
-      <h3 className="text-sm font-semibold text-ink-900">Log their response</h3>
+      <h3 className="flex items-center gap-1.5 text-sm font-semibold text-ink-900"><NotebookPen className="h-4 w-4 text-ink-500" aria-hidden />Log their response</h3>
       <p className="mt-0.5 text-xs text-ink-500">Enter what changed. Leave the rest blank.</p>
       <form className="mt-3 space-y-3" onSubmit={(e) => { e.preventDefault(); if (!empty) submit() }}>
         <Field label="Base salary" htmlFor="log-base"><CurrencyInput id="log-base" value={base} onValueChange={setBase} placeholder="e.g. 205,000" className="h-9 text-sm" /></Field>
@@ -28,7 +28,7 @@ export function LogResponseForm({ onSubmit, disabled }: { onSubmit: (message: st
           <Field label="Equity (total)" htmlFor="log-equity"><CurrencyInput id="log-equity" value={equity} onValueChange={setEquity} placeholder="0" className="h-9 text-sm" /></Field>
         </div>
         <Field label="What they said" htmlFor="log-note" optional><Input id="log-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Top of the band" className="h-9 text-sm" /></Field>
-        <Button type="submit" size="sm" className="w-full" disabled={empty || disabled}>Evaluate their offer</Button>
+        <Button type="submit" size="sm" className="w-full" disabled={empty || disabled} icon={<Scale className="h-3.5 w-3.5" />}>Evaluate their offer</Button>
       </form>
     </Card>
   )

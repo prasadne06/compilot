@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { clsx } from 'clsx'
-import { ArrowUp, Bot, RotateCcw, Sparkles, Square, UserRound } from 'lucide-react'
+import { Bot, CircleHelp, CircleStop, FlaskConical, Handshake, MessageSquarePlus, MessagesSquare, RotateCw, Scale, SendHorizontal, ShieldCheck, Sparkles, User } from 'lucide-react'
 import { useEvaluation } from '../../../state/EvaluationContext'
 import { CoachError, getClaude, runCoach, type CoachEngine, type CoachMessage, type CoachWorkspace } from '../../../services/ai/agent'
 import { Button, Card, Tooltip } from '../../../components/ui'
@@ -50,10 +50,10 @@ export function Coach() {
     if (!analysis) return []
     const r = analysis.recommendation
     return [
-      `They offered ${k(r.fallback)} base and a $10K signing bonus`,
-      `What if base goes to ${k(r.target)}?`,
-      `Why is my leverage ${analysis.leverage.score}?`,
-      'Should I accept the current offer?',
+      { text: `They offered ${k(r.fallback)} base and a $10K signing bonus`, Icon: Handshake },
+      { text: `What if base goes to ${k(r.target)}?`, Icon: FlaskConical },
+      { text: `Why is my leverage ${analysis.leverage.score}?`, Icon: CircleHelp },
+      { text: 'Should I accept the current offer?', Icon: Scale },
     ]
   }, [analysis])
 
@@ -128,7 +128,7 @@ export function Coach() {
             <p className="mt-0.5 text-sm text-ink-500">Tell it what the company said, ask “what if…”, or ask why. Every number comes from CompPilot’s calculations.</p>
           </div>
           {messages.length > 0 && (
-            <Button size="sm" variant="ghost" icon={<RotateCcw className="h-3.5 w-3.5" />} onClick={() => { ctl.current?.abort(); setMessages([]) }} disabled={busy}>
+            <Button size="sm" variant="ghost" icon={<MessageSquarePlus className="h-3.5 w-3.5" />} onClick={() => { ctl.current?.abort(); setMessages([]) }} disabled={busy}>
               New conversation
             </Button>
           )}
@@ -139,12 +139,13 @@ export function Coach() {
           <div ref={listRef} className="max-h-[62vh] min-h-[360px] space-y-5 overflow-y-auto bg-ink-50/40 p-4 sm:p-5" aria-live="polite">
             {messages.length === 0 && (
               <div className="py-6 text-center">
-                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-ink-900 text-white"><Sparkles className="h-4 w-4" /></div>
+                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-pine-50 text-pine-700 ring-1 ring-pine-200"><MessagesSquare className="h-5 w-5" aria-hidden /></div>
                 <p className="mt-3 text-sm font-medium text-ink-900">How can I help with your negotiation?</p>
                 <div className="mx-auto mt-4 flex max-w-xl flex-wrap justify-center gap-2">
-                  {suggestions.map((s) => (
-                    <button key={s} type="button" onClick={() => send(s)} disabled={engine === 'connecting'} className="rounded-full border border-ink-200 bg-white px-3 py-1.5 text-[13px] text-ink-700 shadow-card hover:border-ink-300 hover:text-ink-900 disabled:opacity-50">
-                      {s}
+                  {suggestions.map(({ text, Icon }) => (
+                    <button key={text} type="button" onClick={() => send(text)} disabled={engine === 'connecting'} className="inline-flex items-center gap-1.5 rounded-full border border-ink-200 bg-white px-3 py-1.5 text-[13px] text-ink-700 shadow-card transition-colors hover:border-pine-300 hover:text-ink-900 disabled:opacity-50">
+                      <Icon className="h-3.5 w-3.5 shrink-0 text-pine-600" aria-hidden />
+                      {text}
                     </button>
                   ))}
                 </div>
@@ -153,23 +154,28 @@ export function Coach() {
             {messages.map((m) =>
               m.role === 'user' ? (
                 <div key={m.id} className="ml-auto flex max-w-[85%] flex-row-reverse gap-2.5">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-pine-600 text-white"><UserRound className="h-3.5 w-3.5" /></div>
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-ink-900 text-white" aria-hidden><User className="h-3.5 w-3.5" /></div>
                   <p className="whitespace-pre-line rounded-2xl rounded-tr-sm bg-ink-900 px-3.5 py-2.5 text-[14px] leading-relaxed text-white">{m.text}</p>
                 </div>
               ) : (
                 <div key={m.id} className="flex max-w-[92%] gap-2.5">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-ink-700 ring-1 ring-ink-200"><Sparkles className="h-3.5 w-3.5" /></div>
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-pine-50 text-pine-700 ring-1 ring-pine-200" aria-hidden><Bot className="h-3.5 w-3.5" /></div>
                   <div className="min-w-0 flex-1 space-y-2.5">
                     {(m.tools ?? []).map((t, i) => <ToolResult key={i} event={t} />)}
                     {m.status === 'thinking' && !m.text && (
-                      <p className="flex items-center gap-2 text-[13px] text-ink-500"><Sparkles className="h-3.5 w-3.5 animate-pulse text-pine-600" />{(m.tools?.length ?? 0) > 0 ? 'Working it out…' : 'Thinking…'}</p>
+                      <p className="flex items-center gap-2 rounded-2xl rounded-tl-sm bg-white px-3.5 py-2.5 text-[13px] text-ink-500 shadow-card ring-1 ring-ink-200/70" role="status">
+                        <span className="flex gap-1" aria-hidden>
+                          {[0, 150, 300].map((d) => <span key={d} className="h-1.5 w-1.5 animate-bounce rounded-full bg-pine-500" style={{ animationDelay: `${d}ms` }} />)}
+                        </span>
+                        {(m.tools?.length ?? 0) > 0 ? 'Running the numbers…' : 'Thinking…'}
+                      </p>
                     )}
                     {m.text && (
                       <div className="rounded-2xl rounded-tl-sm bg-white px-4 py-3 shadow-card ring-1 ring-ink-200/70">
                         <MiniMarkdown text={m.text} />
                       </div>
                     )}
-                    {m.status === 'stopped' && <p className="text-xs text-ink-400">Stopped.</p>}
+                    {m.status === 'stopped' && <p className="flex items-center gap-1 text-xs text-ink-400"><CircleStop className="h-3 w-3" aria-hidden />Stopped.</p>}
                     {m.status === 'error' && (
                       <p className="flex flex-wrap items-center gap-2 text-xs text-critical-fg">
                         {m.error}
@@ -178,7 +184,7 @@ export function Coach() {
                           const prompt = messages[idx - 1]?.text
                           setMessages((ms) => ms.filter((_, j) => j !== idx && j !== idx - 1))
                           if (prompt) setTimeout(() => send(prompt), 0)
-                        }}>Try again</button>
+                        }}><span className="inline-flex items-center gap-1"><RotateCw className="h-3 w-3" aria-hidden />Try again</span></button>
                       </p>
                     )}
                   </div>
@@ -201,12 +207,12 @@ export function Coach() {
                 className="max-h-36 min-h-[44px] flex-1 resize-y rounded-xl border border-ink-200 px-3.5 py-2.5 text-[14px] text-ink-900 placeholder:text-ink-400 focus:border-pine-500 focus:outline-none focus:ring-2 focus:ring-pine-500/30"
               />
               {busy ? (
-                <Button type="button" variant="secondary" size="lg" className="h-11 w-11 px-0" onClick={() => ctl.current?.abort()} aria-label="Stop"><Square className="h-3.5 w-3.5 fill-current" /></Button>
+                <Button type="button" variant="secondary" size="lg" className="h-11 w-11 rounded-xl px-0" onClick={() => ctl.current?.abort()} aria-label="Stop" title="Stop"><CircleStop className="h-5 w-5" /></Button>
               ) : (
-                <Button type="submit" size="lg" className="h-11 w-11 px-0" disabled={!draft.trim() || engine === 'connecting'} aria-label="Send"><ArrowUp className="h-4 w-4" /></Button>
+                <Button type="submit" variant="accent" size="lg" className="h-11 w-11 rounded-xl px-0" disabled={!draft.trim() || engine === 'connecting'} aria-label="Send" title="Send (Enter)"><SendHorizontal className="h-[18px] w-[18px]" /></Button>
               )}
             </div>
-            <p className="mt-2 px-1 text-[11px] text-ink-400">AI coach. Suggestions, not guarantees. Market figures are illustrative estimates.</p>
+            <p className="mt-2 flex items-center gap-1.5 px-1 text-[11px] text-ink-400"><ShieldCheck className="h-3 w-3 shrink-0" aria-hidden />AI coach. Suggestions, not guarantees. Market figures are illustrative estimates.</p>
           </form>
         </Card>
       </section>
