@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Tooltip } from './Tooltip'
 import { Check, CircleCheck, FileText, Info, X } from 'lucide-react'
 import type { MatchQuality } from '../../types'
@@ -26,16 +26,32 @@ interface FieldProps {
   children: ReactNode
 }
 
-/** Inline source + quick confirm for an autofilled field. */
+/** One-line source + quick confirm for an autofilled field; the source sentence lives in a tooltip. */
 function AutofillCheck({ autofill, label }: { autofill: FieldAutofill; label: string }) {
-  const [expanded, setExpanded] = useState(false)
   const unsure = autofill.confidence !== 'high'
+  const source = (
+    <span className="block space-y-1.5">
+      <span className="block font-semibold text-white">Where this came from</span>
+      {autofill.evidence && <span className="block break-words italic">“{autofill.evidence}”</span>}
+      {autofill.note && <span className="block text-caution-bd">{autofill.note}</span>}
+    </span>
+  )
   return (
-    <div className={clsx('rounded-lg border px-3 py-2', unsure ? 'border-caution-bd bg-caution-bg/50' : 'border-pine-200 bg-pine-50/60')}>
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+    <div className={clsx('rounded-lg border px-3 py-1.5', unsure ? 'border-caution-bd bg-caution-bg/50' : 'border-pine-200 bg-pine-50/60')}>
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
         <p className={clsx('flex items-center gap-1.5 text-[11px] font-semibold', unsure ? 'text-caution-fg' : 'text-pine-700')}>
           <FileText className="h-3 w-3 shrink-0" aria-hidden />
-          {unsure ? 'From your letter · double-check' : 'From your letter'}
+          {unsure ? (
+            <>
+              <span className="sm:hidden">From letter · check</span>
+              <span className="hidden sm:inline">From your letter · double-check</span>
+            </>
+          ) : (
+            'From your letter'
+          )}
+          <Tooltip content={source}>
+            <Info className="h-3.5 w-3.5" aria-label={`Where ${label} came from`} />
+          </Tooltip>
         </p>
         <div className="flex items-center gap-1.5">
           <button
@@ -52,22 +68,10 @@ function AutofillCheck({ autofill, label }: { autofill: FieldAutofill; label: st
             aria-label={`Clear ${label}`}
             className="inline-flex h-6 items-center gap-1 rounded-md border border-ink-200 bg-white px-2 text-[11px] font-medium text-ink-700 hover:bg-ink-50"
           >
-            <X className="h-3 w-3" aria-hidden /> Clear
+            <X className="h-3 w-3" aria-hidden /> <span className="hidden sm:inline">Clear</span>
           </button>
         </div>
       </div>
-      {autofill.evidence && (
-        <button
-          type="button"
-          onClick={() => setExpanded((e) => !e)}
-          aria-expanded={expanded}
-          title={expanded ? undefined : 'Show the full sentence'}
-          className={clsx('mt-1 w-full break-words text-left text-xs italic leading-relaxed text-ink-600 hover:text-ink-800', !expanded && 'line-clamp-1')}
-        >
-          “{autofill.evidence}”
-        </button>
-      )}
-      {autofill.note && <p className="mt-0.5 text-[11px] leading-snug text-caution-fg">{autofill.note}</p>}
     </div>
   )
 }

@@ -29,6 +29,8 @@ interface Sentence {
   lower: string
 }
 
+const CONNECTIVE = /\b(?:of|the|a|an|and|or|to|in|on|at|with|for|by|our|your|their|its|is|are|be|will|as|from|per|than|that|which|plus)$/i
+
 /** Re-joins lines that a PDF wrapped mid-sentence, keeping headings and "Label: value" lines separate. */
 export function unwrapLines(text: string): string {
   const lines = text.split('\n')
@@ -36,9 +38,12 @@ export function unwrapLines(text: string): string {
   for (const raw of lines) {
     const line = raw.trim()
     const prev = out[out.length - 1]
+    // Only continue a sentence when the break is clearly mid-sentence, so letterheads,
+    // dates and greetings don't get glued onto the paragraph below them.
+    const continues = /^[a-z(]/.test(line) || /[,;]$/.test(prev) || CONNECTIVE.test(prev)
     const joinable =
       prev !== undefined && prev !== '' && line !== '' &&
-      prev.length > 50 && !/[.!?:]$/.test(prev) && !/^[\w ()/&-]{2,40}:\s*\S/.test(line)
+      prev.length > 50 && !/[.!?:]$/.test(prev) && !/^[\w ()/&-]{2,40}:\s*\S/.test(line) && continues
     if (joinable) out[out.length - 1] = `${prev} ${line}`
     else out.push(line)
   }
