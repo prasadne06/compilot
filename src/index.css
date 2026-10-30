@@ -18,3 +18,9 @@
     @apply animate-shimmer rounded-md;
   }
 }
+
+@layer utilities {
+  /* Horizontal strips (tabs, chips) that can swipe sideways on small screens without showing a scrollbar */
+  .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+}

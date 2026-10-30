@@ -62,7 +62,7 @@ export function Scripts() {
         {scripts.error && <div className="mt-5"><ErrorState message={scripts.error} onRetry={scripts.regenerate} /></div>}
         {scripts.result && current && (
           <>
-            <div className="-mx-4 mt-5 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+            <div className="-mx-4 mt-5 overflow-x-auto overflow-y-hidden no-scrollbar px-4 sm:mx-0 sm:px-0">
               <div role="tablist" aria-label="Script versions" className="flex min-w-max gap-2">
                 {scripts.result.data.map((s) => (
                   <button

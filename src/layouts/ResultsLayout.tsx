@@ -64,7 +64,7 @@ export function ResultsLayout() {
         </ButtonLink>
       </div>
 
-      <nav className="-mx-4 mt-6 overflow-x-auto border-b border-ink-200 px-4 sm:mx-0 sm:px-0" aria-label="Results sections">
+      <nav className="-mx-4 mt-6 overflow-x-auto overflow-y-hidden no-scrollbar border-b border-ink-200 px-4 sm:mx-0 sm:px-0" aria-label="Results sections">
         <ul className="flex min-w-max gap-1">
           {TABS.map((t) => (
             <li key={t.to}>
@@ -73,7 +73,7 @@ export function ResultsLayout() {
                 end={t.end}
                 className={({ isActive }) =>
                   clsx(
-                    '-mb-px flex items-center gap-2 border-b-2 px-3 py-3 text-sm font-medium transition-colors',
+                    'flex items-center gap-2 border-b-2 px-3 py-3 text-sm font-medium transition-colors',
                     isActive ? 'border-ink-900 text-ink-900' : 'border-transparent text-ink-500 hover:text-ink-800',
                   )
                 }

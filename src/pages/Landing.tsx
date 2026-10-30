@@ -129,7 +129,7 @@ export function Landing() {
 
       {/* Journey */}
       <section className="border-y border-ink-200/70 bg-white">
-        <div className="mx-auto max-w-6xl overflow-x-auto px-4 py-5 sm:px-6">
+        <div className="mx-auto max-w-6xl overflow-x-auto overflow-y-hidden no-scrollbar px-4 py-5 sm:px-6">
           <ol className="flex min-w-max items-center gap-2 text-[13px] font-medium text-ink-500">
             {JOURNEY.map((j, i) => (
               <li key={j} className="flex items-center gap-2">
