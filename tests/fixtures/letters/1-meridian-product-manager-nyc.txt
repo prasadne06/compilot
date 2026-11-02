@@ -1,0 +1,31 @@
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+MERIDIAN SYSTEMS, INC. 
+450 Park Avenue South, New York, NY 10016 · NYSE: MRDN 
+November 3, 2026 
+Dear Taylor Morgan, 
+On behalf of Meridian Systems, Inc., I am pleased to offer you the position of Senior Product Manager
+on our Payments Platform team. Meridian Systems is a publicly traded company listed on the NYSE. 
+This is a full-time role based in our New York, NY office. We follow a hybrid model with three days per
+week in the office. 
+Your compensation package is summarized below. 
+Base salary $205,000 per year
+Annual bonus target 15% of base salary
+Sign-on bonus $30,000 (one-time)
+RSUs $280,000 target value, 4-year vesting
+Relocation $15,000 
+Your annual base salary will be $205,000, paid bi-weekly. 
+You will be eligible for an annual bonus with a target of 15% of your base salary. You will also receive a
+one-time sign-on bonus of $30,000, payable in your first paycheck. 
+You will be granted restricted stock units (RSUs) with a target value of $280,000, vesting over four
+years in equal quarterly installments. 
+To help with your move, we will provide a relocation package of $15,000. 
+Benefits include medical, dental and vision coverage, a 401(k) plan with a 5% company match, 20
+weeks of paid parental leave, and a $100 monthly commuter benefit. You will receive 25 days of paid
+time off per year. 
+Your start date will be January 5, 2027. 
+Please confirm your acceptance by November 14, 2026. We look forward to welcoming you to Meridian. 
+Warm regards,
+Dana Whitfield, VP of Product, Meridian Systems, Inc. 
+
+This is a fictional sample letter created for testing. Names, companies and figures are made up. 

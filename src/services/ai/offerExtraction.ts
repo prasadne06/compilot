@@ -282,7 +282,9 @@ export function parseOfferText(text: string): OfferExtraction {
   for (const [re, stage] of stageRules) {
     const s = sentences.find((x) => re.test(x.lower))
     if (s) {
-      add('offer.companyStage', stage, 'medium', s.text, 'Inferred from how the letter describes the company.')
+      // Letterheads join address and ticker with "·" or "|"; quote only the part that matched
+      const part = s.text.split(/\s+[·|•]\s+/).find((x) => re.test(x.toLowerCase())) ?? s.text
+      add('offer.companyStage', stage, 'medium', part, 'Inferred from how the letter describes the company.')
       break
     }
   }

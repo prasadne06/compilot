@@ -1,0 +1,25 @@
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+NORTHWIND LABS, INC. 
+1201 Western Avenue, Seattle, WA 98101 
+October 20, 2026 
+Dear Jordan Lee, 
+On behalf of Northwind Labs, Inc., I am delighted to offer you the position of Senior Product Designer
+on our Design Platform team. This is a full-time, exempt position reporting to Priya Raman, Director of
+Design. Northwind Labs is a Series C company, and we believe you will play a key role in our next
+stage of growth. 
+Compensation. Your annual base salary will be $195,000, paid semi-monthly in accordance with our
+standard payroll practices. You will also be eligible for an annual performance bonus with a target of
+15% of your base salary, based on individual and company performance. 
+Equity. Subject to approval by the Board of Directors, you will be granted restricted stock units (RSUs)
+with an approximate value of $120,000, vesting over four years with a one-year cliff. 
+Work location. This is a hybrid role based in our Seattle, WA office, with an expectation of three days
+per week in the office. 
+Benefits. You will be eligible for medical, dental and vision coverage, a 401(k) plan with a 4% company
+match, 16 weeks of paid parental leave, and a $1,500 annual learning stipend. You will receive 20 days
+of paid time off per year, plus company holidays. 
+Start date. Your anticipated start date is December 1, 2026. 
+This offer is contingent upon successful completion of a background check. Please sign and return this
+letter by October 27, 2026. We are excited about the possibility of you joining the team. 
+Sincerely, 
+Priya Raman, Director of Design, Northwind Labs, Inc. 

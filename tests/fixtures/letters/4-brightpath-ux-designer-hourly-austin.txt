@@ -1,0 +1,16 @@
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+Warning: UnknownErrorException: Ensure that the `standardFontDataUrl` API parameter is provided.
+BRIGHTPATH HEALTH 
+600 Congress Avenue, Austin, TX 78701 
+November 10, 2026 
+Dear Riley Brooks, 
+BrightPath Health is pleased to offer you a full-time position as a UX Designer on our Patient
+Experience team. BrightPath Health is a Series B digital health company. 
+Your pay rate will be $72 per hour, paid weekly. 
+This role is based in our Austin, TX office on a hybrid schedule, with two days per week in the office. 
+You will receive 18 days of paid time off per year, plus medical, dental and vision coverage. 
+Your anticipated start date is December 7, 2026. 
+We are excited to have you on the team. 
+Kind regards,
+Avery Chen, Director of Design, BrightPath Health 
+This is a fictional sample letter created for testing. Names, companies and figures are made up. 
