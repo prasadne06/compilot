@@ -1,24 +1,39 @@
 import { useState } from 'react'
-import { ShieldCheck } from 'lucide-react'
+import { ShieldAlert, ShieldCheck } from 'lucide-react'
+import { cn } from '../../lib/cn'
 import { getProviderInfo } from '../../services/ai'
 import { Modal } from '../ui'
 
-/** The notice shown before someone uploads an offer letter. */
+/** The notice shown before someone uploads an offer letter: amber until accepted, green after. */
 export function UploadNotice({ consented, onConsent }: { consented: boolean; onConsent: (v: boolean) => void }) {
+  const Icon = consented ? ShieldCheck : ShieldAlert
   return (
-    <div className="mt-5 rounded-xl border border-ink-200 bg-ink-50/70 p-4">
-      <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
-        <ShieldCheck className="h-4 w-4 text-pine-600" aria-hidden /> Before you upload
+    <div
+      role="region"
+      aria-label="Before you upload"
+      className={cn('mt-5 rounded-xl border-2 p-4 transition-colors', consented ? 'border-pine-200 bg-pine-50/60' : 'border-caution-bd bg-caution-bg')}
+    >
+      <p className={cn('flex items-center gap-2 text-sm font-semibold', consented ? 'text-pine-800' : 'text-caution-fg')}>
+        <Icon className="h-[18px] w-[18px]" aria-hidden /> Before you upload
       </p>
-      <p className="mt-2 text-[13px] leading-relaxed text-ink-600">
-        Your offer letter may contain personal details like your name, address and salary. Only upload it if you’re comfortable doing so and your offer allows it.
-        We use it only to fill in this form, don’t keep the file, and you can clear the details at any time. Prefer not to? Just enter the numbers yourself.
+      <p className="mt-2 text-[13px] leading-relaxed text-ink-700">
+        Your offer letter may contain <strong className="font-semibold text-ink-900">personal details like your name, address and salary</strong>. Only upload it if
+        you’re comfortable doing so and your offer allows it. We use it only to fill in this form, don’t keep the file, and you can clear the details at any time.
+        Prefer not to? Just enter the numbers yourself.
       </p>
-      <label className="mt-3 flex cursor-pointer items-start gap-2.5 text-sm text-ink-800">
+      <label
+        className={cn(
+          'mt-3 flex cursor-pointer items-start gap-2.5 rounded-lg border bg-white px-3 py-2.5 text-sm font-medium transition-colors',
+          consented ? 'border-pine-300 text-pine-900' : 'border-caution-bd text-ink-900 hover:border-caution-fg/50',
+        )}
+      >
         <input id="upload-consent" type="checkbox" checked={consented} onChange={(e) => onConsent(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 rounded border-ink-300 accent-pine-600" />
-        I understand, and I want to upload my offer letter
+        <span>
+          I understand, and I want to upload my offer letter
+          {consented && <span className="mt-0.5 block text-xs font-normal text-pine-700">Thanks. Upload is unlocked below.</span>}
+        </span>
       </label>
-      <div className="mt-2 pl-[26px]"><WhatHappensLink /></div>
+      <div className="mt-2.5"><WhatHappensLink /></div>
     </div>
   )
 }
