@@ -116,12 +116,12 @@ export interface StageInfo {
 }
 
 export const STAGES: Record<CompanyStage, StageInfo> = {
-  early: { label: 'Early-stage startup', baseFactor: 0.92, bonusAdj: 0.3, equityRatio: 0.25, liquid: false, bandNote: 'Early-stage companies often have less cash flexibility but more room on equity.' },
-  growth: { label: 'Growth-stage company', baseFactor: 1.0, bonusAdj: 1, equityRatio: 0.18, liquid: false, bandNote: 'Growth-stage companies usually have defined bands with some flexibility within them.' },
-  late: { label: 'Late-stage / pre-IPO', baseFactor: 1.03, bonusAdj: 1, equityRatio: 0.24, liquid: false, bandNote: 'Late-stage companies often have structured bands and some flexibility on equity.' },
-  public: { label: 'Public technology company', baseFactor: 1.07, bonusAdj: 1.3, equityRatio: 0.38, liquid: true, bandNote: 'Large public companies typically use structured levels and bands; equity and sign-on are often more flexible than base.' },
-  enterprise: { label: 'Established enterprise (non-tech)', baseFactor: 0.96, bonusAdj: 1, equityRatio: 0.06, liquid: true, bandNote: 'Established enterprises often negotiate on base, bonus and sign-on rather than equity.' },
-  unknown: { label: 'Company stage not specified', baseFactor: 1.0, bonusAdj: 1, equityRatio: 0.15, liquid: false, bandNote: 'Company stage was not provided, so equity norms are less certain.' },
+  early: { label: 'Startup', baseFactor: 0.92, bonusAdj: 0.3, equityRatio: 0.25, liquid: false, bandNote: 'Early-stage companies often have less cash flexibility but more room on equity.' },
+  growth: { label: 'Scale-up', baseFactor: 1.0, bonusAdj: 1, equityRatio: 0.18, liquid: false, bandNote: 'Growth-stage companies usually have defined bands with some flexibility within them.' },
+  late: { label: 'Scale-up (pre-IPO)', baseFactor: 1.03, bonusAdj: 1, equityRatio: 0.24, liquid: false, bandNote: 'Late-stage companies often have structured bands and some flexibility on equity.' },
+  public: { label: 'Big tech / public company', baseFactor: 1.07, bonusAdj: 1.3, equityRatio: 0.38, liquid: true, bandNote: 'Large public companies typically use structured levels and bands; equity and sign-on are often more flexible than base.' },
+  enterprise: { label: 'Non-tech company', baseFactor: 0.96, bonusAdj: 1, equityRatio: 0.06, liquid: true, bandNote: 'Established enterprises often negotiate on base, bonus and sign-on rather than equity.' },
+  unknown: { label: 'Company type not specified', baseFactor: 1.0, bonusAdj: 1, equityRatio: 0.15, liquid: false, bandNote: 'Company type was not provided, so equity norms are less certain.' },
 }
 
 // Percentile spread around the median. Widened when confidence is lower.

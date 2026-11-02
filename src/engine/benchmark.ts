@@ -94,7 +94,7 @@ export function buildBenchmark(inputs: EvaluationInputs, widen = 1): Benchmark {
       `Level: ${levelInfo.label} (×${levelInfo.multiplier.toFixed(2)})`,
       `Location: ${loc.label} (×${loc.factor.toFixed(2)})`,
       `Industry: ${ind.label} (×${ind.factor.toFixed(2)})`,
-      `Company stage: ${stage.label} (×${stage.baseFactor.toFixed(2)})`,
+      `Company type: ${stage.label} (×${stage.baseFactor.toFixed(2)})`,
       `Experience adjustment within level: ${pct(expAdj)}`,
       `Total comp assumes a ~${Math.round(typicalBonusPct * 100)}% target bonus and typical equity for this stage and level`,
     ],

@@ -13,7 +13,7 @@ export const AUTOFILL_FIELDS: Record<AutofillKey, AutofillFieldMeta> = {
   'profile.jobTitle': { label: 'Your job title', section: 'About you', kind: 'text' },
   'profile.location': { label: 'Location', section: 'About you', kind: 'select', options: LOCATION_OPTIONS },
   'offer.company': { label: 'Company', section: 'Your offer', kind: 'text' },
-  'offer.companyStage': { label: 'Company stage', section: 'Your offer', kind: 'select', options: STAGE_OPTIONS.filter((o) => o.value !== 'unknown') },
+  'offer.companyStage': { label: 'Company type', section: 'Your offer', kind: 'select', options: STAGE_OPTIONS.filter((o) => o.value !== 'unknown') },
   'offer.role': { label: 'Role title', section: 'Your offer', kind: 'text' },
   'offer.level': { label: 'Level', section: 'Your offer', kind: 'select', options: LEVEL_OPTIONS },
   'offer.base': { label: 'Base salary', section: 'Your offer', kind: 'money', suffix: '/ yr' },

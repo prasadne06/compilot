@@ -249,8 +249,8 @@ export function calculateConfidence(inputs: EvaluationInputs): Confidence {
     ind.match === 'high' ? `${ind.label} is well represented in the model.` : `${ind.label} has thinner modeled coverage.`, 1)
 
   const stage = inputs.offer.companyStage
-  push('Company stage', stage === 'unknown' ? 'low' : 'high',
-    stage === 'unknown' ? 'Stage not provided — equity and bonus norms are less certain.' : `${STAGES[stage].label}.`, 0.75)
+  push('Company type', stage === 'unknown' ? 'low' : 'high',
+    stage === 'unknown' ? 'Company type not provided — equity and bonus norms are less certain.' : `${STAGES[stage].label}.`, 0.75)
 
   const o = inputs.offer
   const filled = [o.base, o.targetBonusPct, o.equityTotal].filter((v) => v !== undefined).length

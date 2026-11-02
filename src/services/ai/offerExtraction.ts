@@ -275,7 +275,7 @@ export function parseOfferText(text: string): OfferExtraction {
   // --- Company stage
   const stageRules: [RegExp, CompanyStage][] = [
     [/publicly traded|nasdaq|nyse|public company/, 'public'],
-    [/pre-?ipo|late[- ]stage|series [e-h]\b/, 'late'],
+    [/pre-?ipo|late[- ]stage|series [e-h]\b/, 'growth'],
     [/series [b-d]\b|growth[- ]stage/, 'growth'],
     [/series a\b|seed[- ]stage|early[- ]stage|\bseed\b/, 'early'],
   ]

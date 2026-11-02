@@ -4,10 +4,10 @@ import { CurrencyInput, Field, Input, NumberInput, Segmented, Select } from '../
 import { Section, StepFrame } from '../../layouts/StepFrame'
 import { useEvaluation } from '../../state/EvaluationContext'
 import { useAutofill } from '../../state/useAutofill'
-import { AutofillNudge, OfferUpload } from '../../components/comp'
+import { AutofillNudge, CompanyTypePicker, OfferUpload } from '../../components/comp'
 import { validateOffer } from '../../engine'
-import { ARRANGEMENT_OPTIONS, LEVEL_OPTIONS, STAGE_OPTIONS, VESTING_OPTIONS } from '../../data/options'
-import type { CompanyStage, JobLevel } from '../../types'
+import { ARRANGEMENT_OPTIONS, LEVEL_OPTIONS, VESTING_OPTIONS } from '../../data/options'
+import type { JobLevel } from '../../types'
 import { formatCurrency } from '../../lib/format'
 
 export function OfferStep() {
@@ -44,17 +44,17 @@ export function OfferStep() {
       <OfferUpload section="offer" compact />
 
       <Section title="The role">
-        <Field label="Company" htmlFor="company" autofill={af.field('offer.company')} optional>
+        <Field label="Company" htmlFor="company" autofill={af.field('offer.company')} optional className="sm:col-span-2">
           <Input id="company" placeholder="Company name" value={o.company} onChange={(e) => updateOffer({ company: e.target.value })} />
-        </Field>
-        <Field label="Company stage" htmlFor="stage" autofill={af.field('offer.companyStage')} info="Stage affects typical equity, bonus and how flexible bands tend to be.">
-          <Select id="stage" options={STAGE_OPTIONS.filter((s) => s.value !== 'unknown')} placeholder="Not sure" value={o.companyStage === 'unknown' ? '' : o.companyStage} onValueChange={(v) => updateOffer({ companyStage: (v || 'unknown') as CompanyStage })} />
         </Field>
         <Field label="Role title" htmlFor="role" autofill={af.field('offer.role')} hint={inputs.profile.jobTitle && !o.role ? `Defaults to “${inputs.profile.jobTitle}”` : undefined} optional>
           <Input id="role" placeholder={inputs.profile.jobTitle || 'e.g. Senior Product Designer'} value={o.role} onChange={(e) => updateOffer({ role: e.target.value })} />
         </Field>
         <Field label="Level" htmlFor="olevel" autofill={af.field('offer.level')} optional>
           <Select id="olevel" options={LEVEL_OPTIONS} placeholder="Same as current" value={o.level} onValueChange={(v) => updateOffer({ level: v as JobLevel })} />
+        </Field>
+        <Field label="Company type" autofill={af.field('offer.companyStage')} hint="Company type shapes typical pay, bonus and equity, and how much the equity counts." className="sm:col-span-2">
+          <CompanyTypePicker value={o.companyStage} onChange={(v) => updateOffer({ companyStage: v })} />
         </Field>
       </Section>
 
