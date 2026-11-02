@@ -6,6 +6,19 @@ import { analyzeOffer, counterTerms, isReadyForAnalysis } from '../engine'
 import { buildAIContext, type AIContext } from '../services/ai'
 
 const STORAGE_KEY = 'comppilot:inputs:v1'
+// Upload markers ("from your letter", confirm progress) last for this tab only, so an upload
+// from an earlier visit never shows up as if it just happened. Form values persist as before.
+const AUTOFILL_KEY = 'comppilot:autofill:v1'
+
+function loadAutofill(): AutofillState | null {
+  try {
+    const raw = sessionStorage.getItem(AUTOFILL_KEY)
+    const a = raw ? (JSON.parse(raw) as AutofillState) : null
+    return a ? { ...a, sources: a.sources ?? {}, warnings: a.warnings ?? [] } : null
+  } catch {
+    return null
+  }
+}
 
 interface Stored {
   inputs: EvaluationInputs
@@ -42,8 +55,8 @@ function load(): Stored {
         isSample: !!parsed.isSample,
         sessionId,
         negotiations,
-        // Older saved shapes lack sources/warnings
-        autofill: parsed.autofill ? { ...parsed.autofill, sources: parsed.autofill.sources ?? {}, warnings: parsed.autofill.warnings ?? [] } : null,
+        // Markers saved by older versions (in localStorage) are ignored
+        autofill: loadAutofill(),
         inputs: {
           profile: { ...EMPTY_INPUTS.profile, ...i.profile },
           offer: { ...EMPTY_INPUTS.offer, ...i.offer },
@@ -56,7 +69,7 @@ function load(): Stored {
   } catch {
     /* storage unavailable or corrupt — start fresh */
   }
-  return { inputs: EMPTY_INPUTS, isSample: false, autofill: null, sessionId: newSessionId(), negotiations: {} }
+  return { inputs: EMPTY_INPUTS, isSample: false, autofill: loadAutofill(), sessionId: newSessionId(), negotiations: {} }
 }
 
 interface EvaluationState {
@@ -101,8 +114,15 @@ export function EvaluationProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState(load)
 
   useEffect(() => {
+    const { autofill, ...persisted } = state
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted))
+    } catch {
+      /* ignore */
+    }
+    try {
+      if (autofill) sessionStorage.setItem(AUTOFILL_KEY, JSON.stringify(autofill))
+      else sessionStorage.removeItem(AUTOFILL_KEY)
     } catch {
       /* ignore */
     }
