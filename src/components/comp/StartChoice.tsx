@@ -6,14 +6,14 @@ export type StartMode = 'manual' | 'upload'
 /** Two equal ways to begin: type the details, or upload an offer letter. */
 export function StartChoice({ mode, onChange }: { mode: StartMode; onChange: (m: StartMode) => void }) {
   const options = [
-    { value: 'manual' as const, Icon: PencilLine, title: 'Enter details', hint: 'Type your role and offer numbers. Takes about 4 minutes.' },
-    { value: 'upload' as const, Icon: Upload, title: 'Upload offer letter', hint: 'Optional. We fill the form from a PDF or Word file, and you confirm each value.' },
+    { value: 'manual' as const, Icon: PencilLine, title: 'Enter details', hint: 'Type your role and offer numbers. Takes about 4 minutes.', recommended: true },
+    { value: 'upload' as const, Icon: Upload, title: 'Upload offer letter', hint: 'Optional. We fill the form from a PDF or Word file, and you confirm each value.', recommended: false },
   ]
   return (
     <section aria-label="How would you like to add your offer?" className="rounded-2xl border border-ink-200/80 bg-white p-5 shadow-card sm:p-6">
       <h2 className="text-[15px] font-semibold text-ink-900">How would you like to add your offer?</h2>
       <div role="radiogroup" aria-label="How would you like to add your offer?" className="mt-4 grid gap-3 sm:grid-cols-2">
-        {options.map(({ value, Icon, title, hint }) => {
+        {options.map(({ value, Icon, title, hint, recommended }) => {
           const active = mode === value
           return (
             <button
@@ -31,7 +31,12 @@ export function StartChoice({ mode, onChange }: { mode: StartMode; onChange: (m:
                 <Icon className="h-4 w-4" aria-hidden />
               </span>
               <span className="min-w-0">
-                <span className="block text-sm font-semibold text-ink-900">{title}</span>
+                <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="text-sm font-semibold text-ink-900">{title}</span>
+                  {recommended && (
+                    <span className="rounded-full bg-pine-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-white">Recommended</span>
+                  )}
+                </span>
                 <span className="mt-0.5 block text-[13px] leading-snug text-ink-500">{hint}</span>
               </span>
             </button>
