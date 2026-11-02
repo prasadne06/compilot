@@ -4,23 +4,12 @@
 import { evaluateCounter, runWhatIf, type OfferPatch } from '../../../engine'
 import { k, parseAmount } from '../../../lib/format'
 import type { CounterOffer } from '../../../types'
-import type { CoachToolName, CoachWorkspace, ToolEvent } from './types'
+import type { CoachWorkspace, ToolEvent } from './types'
+import { COACH_TOOL_SPECS, type CoachToolSpec } from './toolSpecs'
 
-export interface CoachTool {
-  name: CoachToolName
-  description: string
-  inputSchema: { type: 'object'; properties: Record<string, unknown>; required?: string[] }
+export interface CoachTool extends CoachToolSpec {
   /** Runs the tool; returns the event to show the user and compact data for the model. */
   run: (input: Record<string, unknown>, ws: CoachWorkspace) => { event: ToolEvent; result: unknown }
-}
-
-const money = (description: string) => ({ type: 'number', description })
-
-const OFFER_FIELDS = {
-  base: money('Annual base salary in dollars, e.g. 215000'),
-  targetBonusPct: { type: 'number', description: 'Target bonus as a percent of base, e.g. 15' },
-  signingBonus: money('One-time signing bonus in dollars'),
-  equityTotal: money('Total equity grant value in dollars over the full vesting period'),
 }
 
 function readTerms(input: Record<string, unknown>): Omit<CounterOffer, 'id' | 'at' | 'note'> {
@@ -47,18 +36,7 @@ function termsLabel(t: Omit<CounterOffer, 'id' | 'at' | 'note'>): string {
 
 export const COACH_TOOLS: CoachTool[] = [
   {
-    name: 'run_what_if',
-    description:
-      'Re-runs CompPilot\'s scoring on a HYPOTHETICAL version of the offer and returns before/after numbers (offer score, base percentile, total comp, recommendation). Use for any "what if" question. Does not change the user\'s saved offer.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        ...OFFER_FIELDS,
-        vestingYears: { type: 'number', description: 'Vesting period in years' },
-        ptoDays: { type: 'number', description: 'Paid time off days per year' },
-        competingBase: money('A different competing-offer base salary to test'),
-      },
-    },
+    ...COACH_TOOL_SPECS.run_what_if,
     run: (input, ws) => {
       const patch: OfferPatch = { ...readTerms(input) }
       const vest = parseAmount(input.vestingYears)
@@ -72,16 +50,7 @@ export const COACH_TOOLS: CoachTool[] = [
     },
   },
   {
-    name: 'evaluate_counter_offer',
-    description:
-      'Evaluates terms the COMPANY offered (a counter-offer) against the original offer and the user\'s target, fallback and walk-away. Fields not given keep their latest known value. Returns the numbers plus a rule-based suggested next move (accept, close, counter, pivot or below_walk_away) with reasons and, when relevant, a suggested counter base. Set isNewResponse to false to re-check the latest response already in the timeline.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        ...OFFER_FIELDS,
-        isNewResponse: { type: 'boolean', description: 'true (default) for a new response not yet in the timeline; false to re-evaluate the latest logged response' },
-      },
-    },
+    ...COACH_TOOL_SPECS.evaluate_counter_offer,
     run: (input, ws) => {
       const terms = readTerms(input)
       if (!Object.keys(terms).length) throw new Error('Give at least one number from the company, such as base.')
@@ -92,14 +61,7 @@ export const COACH_TOOLS: CoachTool[] = [
     },
   },
   {
-    name: 'log_counter_offer',
-    description:
-      'Records a response the company ACTUALLY gave (as reported by the user) in the negotiation timeline, so later rounds build on it. Never use for hypotheticals or for the user\'s own asks. Call after evaluate_counter_offer.',
-    inputSchema: {
-      type: 'object',
-      properties: { ...OFFER_FIELDS, note: { type: 'string', description: 'Short summary of what they said, e.g. "Recruiter call: top of band"' } },
-      required: ['note'],
-    },
+    ...COACH_TOOL_SPECS.log_counter_offer,
     run: (input, ws) => {
       const terms = readTerms(input)
       if (!Object.keys(terms).length) throw new Error('Nothing to record: no numbers given.')

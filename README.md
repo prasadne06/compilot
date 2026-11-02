@@ -8,9 +8,14 @@ An AI-powered salary evaluation and negotiation copilot. It helps someone with a
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
-npm run build    # typecheck + production build
+npm run dev        # http://localhost:5173 (also serves /api)
+npm run build      # typecheck + production build
+npm test           # unit tests, then browser tests on the production build
 ```
+
+To use Claude locally, copy `.env.example` to `.env.local` and set `ANTHROPIC_API_KEY`. Without it, every AI feature uses built-in rules and templates.
+
+There is also a **1-minute quick check** at `/quick`: job title, level, location and base salary give a below / within / above verdict, and either button carries those details into the full evaluation.
 
 Click **“Or explore a sample offer”** on the landing page to see the full experience with the demo persona (Senior Product Designer, Seattle, $195K offer, $210K written competing offer).
 
@@ -18,8 +23,8 @@ Click **“Or explore a sample offer”** on the landing page to see the full ex
 
 On the first two steps you can upload an offer letter (**PDF** or **Word .docx**, up to 10 MB) instead of typing everything:
 
-1. The file is read **in the browser** (`src/services/documents/textExtraction.ts`, using pdf.js and mammoth, loaded on demand). In mock mode nothing leaves the device; with an AI endpoint configured, only the extracted text is sent.
-2. `extractOfferDetails()` (`src/services/ai/offerExtraction.ts`) returns structured fields. Each one has a confidence rating and the sentence it came from. The mock is a rule-based parser that handles annual, hourly, bi-weekly and monthly pay, "$195K" shorthand, equity value and vesting, PTO, start date, remote policy, location, company stage and benefits.
+1. The file is read **in the browser** (`src/services/documents/textExtraction.ts`, using pdf.js and mammoth, loaded on demand). Without the AI server nothing leaves the device; with it, only the extracted text, with personal details removed, is sent.
+2. `extractOfferDetails()` (`src/services/ai/offerExtraction.ts`) returns structured fields. Each one has a confidence rating and the sentence it came from. With Claude on, a value is kept only if its quoted sentence really appears in the letter (`checkAIExtraction`); anything Claude missed is filled by the built-in reader. The built-in reader is a rule-based parser that handles annual, hourly, bi-weekly and monthly pay, "$195K" shorthand, equity value and vesting, PTO, start date, remote policy, location, company stage and benefits.
 3. Values go straight into the form. Each filled field shows the sentence it came from, with **Looks right** and **Clear** buttons; editing the value also confirms it. Uncertain values (inferred or converted) are marked "double-check" with the reason.
 4. A panel at the top of each page tracks progress ("3 of 13 confirmed"), offers **Confirm all on this page**, and lists anything the letter didn't state clearly. Continuing with unconfirmed fields shows a reminder. Uploading a different file replaces the earlier values.
 
@@ -31,7 +36,7 @@ Not supported: old `.doc` files and scanned (image-only) PDFs. Both get a clear 
 
 ## Negotiation coach (agentic)
 
-The **Coach** tab (`/results/coach`) is a chat for the live negotiation:
+The **Coach** tab (`/results/coach`) has two modes: **Plan replies** (a chat for the live negotiation, below) and **Rehearse the call** (practice with a simulated recruiter, with feedback on each answer; `/practice` redirects here).
 
 - **Counter-offers:** tell it what the company came back with (or use the *Log their response* form). It evaluates the new terms against your original offer, target, fallback and walk-away, suggests a next move (accept / one final ask / counter / pivot to other levers) and drafts a reply. Each response is added to a **negotiation timeline**.
 - **What-ifs and "why":** "What if base goes to $215K?", "Why is my leverage 77?". What-ifs never change your saved offer.
@@ -39,8 +44,8 @@ The **Coach** tab (`/results/coach`) is a chat for the live negotiation:
 How it works (`src/services/ai/agent/`):
 
 - The model only chooses tools and explains. Every number comes from three tools backed by the deterministic engine (`src/engine/negotiation.ts`): `run_what_if`, `evaluate_counter_offer`, `log_counter_offer`. Tool results appear in the chat as **Calculated** cards.
-- **Claude engine:** inside a claude.ai artifact viewer, the app uses the runtime's `sample` capability (Claude with page-defined tools, on the viewer's own Claude account; the viewer is asked once). Instructions plus the user's full situation are sent each turn (`prompt.ts`).
-- **Offline coach:** everywhere else (local dev, a plain web deploy), or if the viewer declines Claude access, a rule-based coach handles the common requests with the same tools.
+- **Claude engine:** when the app is deployed with an API key, the coach talks to Claude through CompPilot's server (`serverRuntime.ts` → `/api/coach`). The server makes one model call at a time with a fixed system prompt and the three tool definitions; tool calls come back to the browser, run with CompPilot's calculations, and go back with the results. Inside a claude.ai artifact viewer, the runtime's `sample` capability is used instead. Instructions plus the user's full situation are sent each turn (`prompt.ts`).
+- **Offline coach:** with no AI server (or if Claude is unavailable), a rule-based coach handles the common requests with the same tools.
 - Replies are checked against product guardrails (`checkConversationalText`). The coach never sets the walk-away number, never suggests bluffing, and never tells the user they must accept or reject.
 - "Use latest terms as my offer" (an explicit user action) re-runs the full evaluation on the newest terms.
 - **One conversation per offer.** The chat and timeline are saved in the browser per offer (`src/state/coachHistory.ts`, last 8 offers). Uploading a letter, loading the sample, clearing data, or changing the company or role starts a new conversation; switching back restores it.
@@ -48,7 +53,7 @@ How it works (`src/services/ai/agent/`):
 
 ## Stack
 
-Vite · React 19 · TypeScript · Tailwind CSS 3 · React Router 6 · lucide-react · pdfjs-dist · mammoth. No backend; inputs persist in `localStorage`.
+Vite · React 19 · TypeScript · Tailwind CSS 3 · React Router 6 · lucide-react · pdfjs-dist · mammoth · Anthropic TypeScript SDK (server only) · Vitest · Playwright. Inputs persist in `localStorage`; the optional server keeps no data.
 
 ## Architecture
 
@@ -87,9 +92,32 @@ src/
 - **Walk-away is user-defined.** It is never computed.
 - **Honest negotiation.** Scripts only mention competing offers the user actually reported; role-play coaching flags ultimatums, coercion and references to offers that don't exist.
 
-## Connecting a real LLM
+## AI server (Claude)
 
-Set `VITE_AI_ENDPOINT` (see `.env.example`) to a **server-side** proxy. Each AI call POSTs `{ task, system, input, response_format: "json" }`. Responses are shape-validated and run through guardrails; anything invalid falls back to the mock automatically.
+`server/handlers.ts` has three small endpoints, deployed as Vercel functions from `api/` and served by `npm run dev` too:
+
+| Endpoint | What it does |
+|---|---|
+| `GET /api/health` | `{ ai: true }` when `ANTHROPIC_API_KEY` is set. The browser checks this once; AI turns on automatically. |
+| `POST /api/task` | `{ task, input }` → `{ data }`. Summaries, strategy notes, scripts, pushback answers, rehearsal turns and letter reading. The system prompts live on the server (`src/services/ai/prompts.ts`). |
+| `POST /api/coach` | One coach model call, streamed as newline-delimited JSON. Fixed system prompt and tools; the browser runs the tools. |
+
+- **The key stays on the server.** The browser sends only data (task name and input, or the conversation). It can't choose the model, system prompt or tools.
+- **Model:** `claude-opus-5-5` by default; set `CLAUDE_MODEL` (e.g. `claude-sonnet-5-5` or `claude-haiku-5-5`) to trade quality for cost. Refused requests are retried on a suitable model by the API (`fallbacks: "default"`).
+- **Limits:** request size caps, a per-IP rate limit per server instance, and optional `ALLOWED_ORIGINS`. The rate limit is best effort on serverless, so **also set a monthly spend limit in the Anthropic Console**.
+- **Safety net:** every reply is shape-checked and run through guardrails in the browser; anything invalid falls back to the built-in rules and templates.
+
+### Deploy to Vercel
+
+1. Import the GitHub repo in Vercel (framework: Vite; `vercel.json` sets the rest).
+2. Add `ANTHROPIC_API_KEY` (and optionally `CLAUDE_MODEL`, `ALLOWED_ORIGINS`) under Project → Settings → Environment Variables.
+3. Deploy. Settings → AI provider in the app shows "Claude on" when it works.
+
+## Tests and CI
+
+- `npm run test:unit` (Vitest, `tests/unit`): the scoring engine and its published sample numbers, negotiation moves, the letter reader on 8 fictional letters (`tests/fixtures/letters`), redaction, guardrails, the AI server with a stand-in Claude client, and the browser's coach tool loop.
+- `npm run test:e2e` (Playwright, `tests/e2e`): runs on the **production build** — journeys, quick check, upload and privacy, coach and rehearse, a zero-size icon check, and phone layout. Browser tests never call Claude.
+- GitHub Actions (`.github/workflows/ci.yml`) runs lint, type check, unit and browser tests on every push and pull request.
 
 ## Benchmark data disclaimer
 

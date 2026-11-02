@@ -121,8 +121,8 @@ function CoachChat() {
         side="bottom"
         content={
           engine === 'claude'
-            ? 'Answers come from Claude, using your Claude account. Claude calls CompPilot’s own calculations for every number.'
-            : 'The offline coach understands common requests with fixed rules. Open CompPilot in Claude to chat with Claude instead.'
+            ? 'Answers come from Claude. Claude calls CompPilot’s own calculations for every number.'
+            : 'The offline coach understands common requests with fixed rules. Claude isn’t connected on this site.'
         }
       >
         <span className={clsx('inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium', engine === 'claude' ? 'border-pine-200 bg-pine-50 text-pine-700' : 'border-ink-200 bg-white text-ink-600')}>

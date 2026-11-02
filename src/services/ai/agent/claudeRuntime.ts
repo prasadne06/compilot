@@ -1,6 +1,10 @@
-// Access to Claude through the claude.ai artifact runtime's `sample` capability.
-// Available only when the app runs inside a Claude artifact viewer; everywhere else
-// this resolves null and the offline coach is used.
+// Access to Claude for the coach, in order of preference:
+//   1. the claude.ai artifact runtime's `sample` capability (when the app runs as an artifact)
+//   2. CompPilot's own server, when deployed with an API key (see serverRuntime.ts)
+// Otherwise this resolves null and the offline coach is used.
+
+import { getAIServer } from '../server'
+import { serverSample } from './serverRuntime'
 
 export interface SampleTool {
   name: string
@@ -32,16 +36,17 @@ let pending: Promise<SampleFn | null> | null = null
 export function getClaude(): Promise<SampleFn | null> {
   if (!pending)
     pending = (async () => {
-      if (typeof window === 'undefined' || !window.claude?.use) return null
-      try {
-        const sample = (await window.claude.use('sample')) as SampleFn | null
-        if (!sample) return null
-        const limits = await sample.limits?.().catch(() => null)
-        if (limits && !limits.tools) return null
-        return sample
-      } catch {
-        return null
+      if (typeof window !== 'undefined' && window.claude?.use) {
+        try {
+          const sample = (await window.claude.use('sample')) as SampleFn | null
+          const limits = sample ? await sample.limits?.().catch(() => null) : null
+          if (sample && !(limits && !limits.tools)) return sample
+        } catch {
+          /* fall through to the server */
+        }
       }
+      const server = await getAIServer()
+      return server ? serverSample(server.base) : null
     })()
   return pending
 }

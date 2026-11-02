@@ -1,6 +1,7 @@
 import type { Analysis, CounterEvaluation, CounterOffer, EvaluationInputs, WhatIfResult } from '../../../types'
 
-export type CoachToolName = 'run_what_if' | 'evaluate_counter_offer' | 'log_counter_offer'
+import type { CoachToolName } from './toolSpecs'
+export type { CoachToolName }
 
 /** One tool call the coach made, shown to the user so they can see where numbers came from. */
 export interface ToolEvent {

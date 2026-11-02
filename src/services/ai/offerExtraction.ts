@@ -1,3 +1,4 @@
+import { AUTOFILL_FIELDS } from '../../data/autofillFields'
 import type { AutofillKey, CompanyStage, ExtractedField, JobLevel, MatchQuality, OfferExtraction, WorkArrangement } from '../../types'
 import { isObj, isStr, runTask, type AIResult } from './provider'
 import { findRecipientName, findSignerName, redactPersonalDetails } from '../documents/redact'
@@ -331,6 +332,28 @@ export async function extractOfferDetails(text: string): Promise<AIResult<OfferE
   const names = [findRecipientName(text) ?? '', findSignerName(text) ?? '']
   const redacted = redactPersonalDetails(text, names)
   const result = await runTask('offer_extraction', { text: redacted.slice(0, 20_000) }, { mock: () => parseOfferText(text), validate: isExtraction, latencyMs: 600 })
-  const fields = result.data.fields.map((f) => ({ ...f, evidence: redactPersonalDetails(f.evidence, names) }))
-  return { ...result, data: { ...result.data, fields } }
+  const data = result.source === 'llm' ? checkAIExtraction(result.data, redacted, parseOfferText(text)) : result.data
+  const fields = data.fields.map((f) => ({ ...f, evidence: redactPersonalDetails(f.evidence, names) }))
+  return { ...result, data: { ...data, fields } }
+}
+
+const squash = (s: string) => s.toLowerCase().replace(/[“”"‘’']/g, '').replace(/\s+/g, ' ').trim()
+
+/**
+ * Keeps only AI-found values that quote a sentence actually in the letter and use a known
+ * field, then fills any gaps from the built-in reader. Warnings from both are kept.
+ */
+export function checkAIExtraction(ai: OfferExtraction, letter: string, local: OfferExtraction): OfferExtraction {
+  const haystack = squash(letter)
+  const kept = ai.fields.filter((f) => {
+    if (!(f.key in AUTOFILL_FIELDS)) return false
+    const quote = squash(f.evidence).replace(/^\.+|\.+$/g, '')
+    if (quote.length < 6 || !haystack.includes(quote.slice(0, 160))) return false
+    const kind = AUTOFILL_FIELDS[f.key].kind
+    return ['money', 'percent', 'number'].includes(kind) ? typeof f.value === 'number' && Number.isFinite(f.value) && f.value >= 0 : String(f.value).trim() !== ''
+  })
+  const have = new Set(kept.map((f) => f.key))
+  const fields = [...kept, ...local.fields.filter((f) => !have.has(f.key))]
+  const warnings = [...new Set([...local.warnings.filter((w) => /non-US/.test(w)), ...ai.warnings])].filter((w) => !(/couldn’t find a base salary/i.test(w) && have.has('offer.base')))
+  return { fields, warnings }
 }

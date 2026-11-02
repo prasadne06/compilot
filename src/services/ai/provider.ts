@@ -1,14 +1,15 @@
 // AI provider abstraction.
 //
-// Every AI feature goes through `runTask`, which:
-//   1. Sends a structured request (task + system prompt + JSON input + expected schema) to an
-//      LLM endpoint when one is configured (VITE_AI_ENDPOINT — a server-side proxy; never put
-//      provider API keys in the browser), or
-//   2. Falls back to a local mock generator that produces the same structured JSON.
-// All outputs are validated and passed through guardrails before reaching the UI.
+// Every structured AI feature goes through `runTask`, which:
+//   1. Sends { task, input } to CompPilot's AI server when one is running (see /server). The
+//      server holds the API key and the system prompts; the browser never sees either.
+//   2. Otherwise uses a local generator that produces the same JSON shape.
+// All outputs are shape-checked and passed through guardrails; anything invalid falls back
+// to the local generator.
 
 import { checkGuardrails } from './guardrails'
-import { SYSTEM_PROMPTS, type AITask } from './prompts'
+import type { AITask } from './prompts'
+import { getAIServer } from './server'
 
 export type AISource = 'mock' | 'llm' | 'fallback'
 
@@ -20,16 +21,15 @@ export interface AIResult<T> {
 
 export interface AIProviderInfo {
   mode: 'mock' | 'remote'
-  endpoint?: string
+  model?: string
   label: string
 }
 
-const ENDPOINT = (import.meta.env?.VITE_AI_ENDPOINT as string | undefined)?.trim() || undefined
-
-export function getProviderInfo(): AIProviderInfo {
-  return ENDPOINT
-    ? { mode: 'remote', endpoint: ENDPOINT, label: 'LLM via server endpoint' }
-    : { mode: 'mock', label: 'Local mock AI (no API key configured)' }
+export async function getProviderInfo(): Promise<AIProviderInfo> {
+  const server = await getAIServer()
+  return server
+    ? { mode: 'remote', model: server.model, label: 'Claude, through CompPilot’s server' }
+    : { mode: 'mock', label: 'Built-in rules and templates (no AI server)' }
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -46,15 +46,16 @@ interface RunOptions<T> {
 export async function runTask<T>(task: AITask, input: unknown, opts: RunOptions<T>): Promise<AIResult<T>> {
   const now = () => new Date().toISOString()
 
-  if (ENDPOINT) {
+  const server = await getAIServer()
+  if (server) {
     try {
-      const res = await fetch(ENDPOINT, {
+      const res = await fetch(`${server.base}/task`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task, system: SYSTEM_PROMPTS[task], input, response_format: 'json' }),
+        body: JSON.stringify({ task, input }),
       })
-      if (!res.ok) throw new Error(`AI endpoint returned ${res.status}`)
-      const json: unknown = await res.json()
+      if (!res.ok) throw new Error(`AI server returned ${res.status}`)
+      const json = ((await res.json()) as { data?: unknown }).data
       if (!opts.validate(json)) throw new Error('AI response did not match the expected schema')
       const violations = checkGuardrails(json)
       if (violations.length) throw new Error(`AI response failed guardrails: ${violations.join(', ')}`)

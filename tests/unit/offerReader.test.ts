@@ -88,3 +88,28 @@ describe('offer letter reader', () => {
     }
   })
 })
+
+describe('checking letter values found by Claude', () => {
+  it('keeps quoted values, drops made-up ones, and fills gaps from the built-in reader', async () => {
+    const { checkAIExtraction } = await import('../../src/services/ai/offerExtraction')
+    const text = letter('sample-offer-letter')
+    const local = parseOfferText(text)
+    const checked = checkAIExtraction(
+      {
+        fields: [
+          { key: 'offer.base', value: 199000, confidence: 'high', evidence: 'Your annual base salary will be $199,000' }, // not in the letter
+          { key: 'offer.company', value: 'Northwind Labs', confidence: 'high', evidence: 'On behalf of Northwind Labs, Inc., I am delighted to offer you the position of Senior Product Designer' },
+          { key: 'offer.made_up' as never, value: 1, confidence: 'high', evidence: 'On behalf of Northwind Labs' },
+        ],
+        warnings: [],
+      },
+      text,
+      local,
+    )
+    const values = Object.fromEntries(checked.fields.map((f) => [f.key, f.value]))
+    expect(values['offer.base']).toBe(195000) // from the built-in reader
+    expect(values['offer.company']).toBe('Northwind Labs')
+    expect(values).not.toHaveProperty('offer.made_up')
+    expect(checked.fields).toHaveLength(local.fields.length)
+  })
+})

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ShieldAlert, ShieldCheck } from 'lucide-react'
 import { cn } from '../../lib/cn'
-import { getProviderInfo } from '../../services/ai'
+import { useProviderInfo } from '../../state/useProviderInfo'
 import { Modal } from '../ui'
 
 /** The notice shown before someone uploads an offer letter: amber until accepted, green after. */
@@ -41,11 +41,11 @@ export function UploadNotice({ consented, onConsent }: { consented: boolean; onC
 /** Explains, step by step, what happens to an uploaded file. */
 export function WhatHappensLink() {
   const [open, setOpen] = useState(false)
-  const remote = getProviderInfo().mode === 'remote'
+  const remote = useProviderInfo()?.mode === 'remote'
   const steps = [
     'Your file is opened and read in your browser, on your device.',
     remote
-      ? 'Personal details (names, email, phone, street address, ID numbers) are removed, and only the remaining text is sent to our AI provider to find the offer details. The file itself is never sent.'
+      ? 'Personal details (names, email, phone, street address, ID numbers) are removed, and only the remaining text is sent to Claude (Anthropic’s AI) through CompPilot’s server to find the offer details. The file itself is never sent.'
       : 'The offer details are found on your device. Nothing is sent to a server or an AI service.',
     'The file and its full text aren’t kept. Only the values you confirm are saved, in this browser.',
     'Next to each filled value, we keep the sentence it came from (with personal details removed) so you can check it.',

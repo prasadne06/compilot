@@ -1,6 +1,6 @@
-// System prompts for the LLM-backed implementation of each AI task.
-// The mock generators in this folder produce the same JSON shapes, so swapping in a
-// real provider only requires a server endpoint that honors these prompts.
+// System prompts for each AI task. They are used by CompPilot's server (see /server), never
+// sent from the browser. The local generators in this folder produce the same JSON shapes.
+// No imports: the server shares this file.
 
 export type AITask =
   | 'salary_analysis'
@@ -45,7 +45,7 @@ Schema: { "feedback": { "score": number(0-10, one decimal), "strengths": string[
 
   offer_extraction: `${SHARED}
 Task: Extract job offer details from the offer-letter text provided. Only extract values that are explicitly stated or directly implied; never guess numbers.
-For each field, quote the sentence it came from as "evidence" and rate confidence high/medium/low. Annualize pay stated per hour/week/month and explain the conversion in "note".
+For each field, copy the sentence it came from word for word as "evidence" (values without an exact quote are discarded) and rate confidence high/medium/low. Annualize pay stated per hour/week/month and explain the conversion in "note".
 Allowed keys: profile.jobTitle, profile.location (one of: sf, nyc, sea, bos, la, sd, dc, aus, den, chi, pdx, atl, remote_us, other_us; US offers only), offer.company, offer.companyStage (early|growth|late|public|enterprise), offer.role, offer.level (entry|mid|senior|staff|principal|manager|senior_manager|director), offer.base, offer.targetBonusPct, offer.signingBonus, offer.equityTotal, offer.vestingYears, offer.otherAnnualComp, offer.ptoDays, offer.remotePolicy (remote|hybrid|onsite), offer.startDate (YYYY-MM-DD), offer.relocation, offer.benefitsNotes.
 Schema: { "fields": [{ "key": string, "value": string|number, "confidence": "high"|"medium"|"low", "evidence": string, "note"?: string }], "warnings": string[] }`,
 }
