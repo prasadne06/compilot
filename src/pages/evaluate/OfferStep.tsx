@@ -53,7 +53,7 @@ export function OfferStep() {
         <Field label="Level" htmlFor="olevel" autofill={af.field('offer.level')} optional>
           <Select id="olevel" options={LEVEL_OPTIONS} placeholder="Same as current" value={o.level} onValueChange={(v) => updateOffer({ level: v as JobLevel })} />
         </Field>
-        <Field label="Company type" autofill={af.field('offer.companyStage')} hint="Company type shapes typical pay, bonus and equity, and how much the equity counts." className="sm:col-span-2">
+        <Field label="Company type" autofill={af.field('offer.companyStage')} className="sm:col-span-2">
           <CompanyTypePicker value={o.companyStage} onChange={(v) => updateOffer({ companyStage: v })} />
         </Field>
       </Section>
