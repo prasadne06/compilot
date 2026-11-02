@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { clsx } from 'clsx'
 import { ArrowLeft, ArrowRight, Check, CornerDownLeft, Lightbulb, RotateCcw, Sparkles, Trophy, UserRound } from 'lucide-react'
-import { useEvaluation } from '../state/EvaluationContext'
-import { PRACTICE_SCENARIOS, respondToUser, startSession } from '../services/ai'
-import { Badge, Button, Card, LoadingState } from '../components/ui'
-import { SourceTag } from '../components/comp'
-import type { PracticeScenarioId, PracticeSession, ResponseFeedback } from '../types'
-import { k } from '../lib/format'
+import { useEvaluation } from '../../../state/EvaluationContext'
+import { PRACTICE_SCENARIOS, respondToUser, startSession } from '../../../services/ai'
+import { Badge, Button, Card, LoadingState } from '../../../components/ui'
+import { SourceTag } from '../../../components/comp'
+import type { PracticeScenarioId, PracticeSession, ResponseFeedback } from '../../../types'
+import { k } from '../../../lib/format'
 
 function FeedbackCard({ fb }: { fb: ResponseFeedback }) {
   const tone = fb.score >= 8 ? 'good' : fb.score >= 6 ? 'caution' : 'serious'
@@ -51,7 +51,7 @@ function ScenarioPicker({ onPick }: { onPick: (id: PracticeScenarioId) => void }
   return (
     <div className="animate-fadeUp">
       <div className="max-w-2xl">
-        <h2 className="text-lg font-semibold tracking-tight text-ink-900">Practice negotiating</h2>
+        <h2 className="text-lg font-semibold tracking-tight text-ink-900">Rehearse the call</h2>
         <p className="mt-1 text-sm leading-relaxed text-ink-500">
           An AI recruiter will push back. You respond in your own words, and get supportive coaching after each message. Three rounds, about five minutes.
           {aiContext && <> Your target is <strong className="font-semibold text-ink-800">{k(aiContext.target)}</strong>.</>}
@@ -75,7 +75,7 @@ function ScenarioPicker({ onPick }: { onPick: (id: PracticeScenarioId) => void }
   )
 }
 
-export function Practice() {
+export function Rehearse() {
   const { aiContext } = useEvaluation()
   const [session, setSession] = useState<PracticeSession | null>(null)
   const [draft, setDraft] = useState('')

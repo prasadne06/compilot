@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { clsx } from 'clsx'
-import { BarChart3, FileText, Handshake, LayoutDashboard, MessagesSquare, Pencil, PlayCircle, Sparkles } from 'lucide-react'
+import { BarChart3, FileText, Handshake, LayoutDashboard, Pencil, PlayCircle, Sparkles } from 'lucide-react'
 import { useEvaluation } from '../state/EvaluationContext'
 import { Button, ButtonLink, EmptyState } from '../components/ui'
 import { ConfidenceIndicator, Disclaimer, RecommendationBadge } from '../components/comp'
@@ -11,7 +11,6 @@ const TABS = [
   { to: '/results/market', label: 'Market', icon: BarChart3 },
   { to: '/results/negotiation', label: 'Strategy', icon: Handshake },
   { to: '/results/scripts', label: 'Scripts', icon: FileText },
-  { to: '/practice', label: 'Practice', icon: MessagesSquare },
   { to: '/results/coach', label: 'Coach', icon: Sparkles },
 ]
 
@@ -90,7 +89,7 @@ export function ResultsLayout() {
         <Outlet />
       </div>
 
-      <Disclaimer className="mt-12" />
+      <Disclaimer variant="line" className="mt-12" />
     </div>
   )
 }

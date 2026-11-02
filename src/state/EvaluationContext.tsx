@@ -88,6 +88,8 @@ interface EvaluationState {
   setPriorities: (p: Priority[]) => void
   setWalkAway: (v: number | undefined) => void
   loadSample: () => void
+  /** Starts a new offer from the given inputs (e.g. the quick check). */
+  startWith: (inputs: EvaluationInputs) => void
   reset: () => void
   /** Identifies the active offer; the coach keeps one conversation per offer. */
   offerKey: string
@@ -189,6 +191,7 @@ export function EvaluationProvider({ children }: { children: ReactNode }) {
     setPriorities: (p) => patch((i) => ({ ...i, priorities: p })),
     setWalkAway: (v) => patch((i) => ({ ...i, walkAway: v }), true),
     loadSample: () => setState((s) => ({ ...s, inputs: structuredClone(SAMPLE_PERSONA), isSample: true, autofill: null, sessionId: newSessionId() })),
+    startWith: (next) => setState((s) => ({ ...s, inputs: structuredClone(next), isSample: false, autofill: null, sessionId: newSessionId() })),
     reset: () => setState({ inputs: structuredClone(EMPTY_INPUTS), isSample: false, autofill: null, sessionId: newSessionId(), negotiations: {} }),
     offerKey,
     counters,

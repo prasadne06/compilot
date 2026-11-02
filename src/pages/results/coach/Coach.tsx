@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { clsx } from 'clsx'
-import { Bot, Briefcase, CircleHelp, CircleStop, FlaskConical, Handshake, History, Lightbulb, MessageSquarePlus, MessagesSquare, PenLine, RotateCw, Scale, SendHorizontal, ShieldCheck, Sparkles, User } from 'lucide-react'
+import { Bot, Briefcase, CircleHelp, CircleStop, FlaskConical, Handshake, History, Lightbulb, MessageSquarePlus, MessagesSquare, Mic, PenLine, RotateCw, Scale, SendHorizontal, ShieldCheck, Sparkles, User } from 'lucide-react'
 import { useEvaluation } from '../../../state/EvaluationContext'
 import { CoachError, getClaude, runCoach, type CoachEngine, type CoachMessage, type CoachWorkspace } from '../../../services/ai/agent'
 import { coachSuggestions, type SuggestionKind } from '../../../services/ai/agent/suggestions'
@@ -10,6 +11,7 @@ import { k } from '../../../lib/format'
 import { MiniMarkdown } from './MiniMarkdown'
 import { ToolResult } from './ToolResult'
 import { LogResponseForm, NegotiationTimeline } from './CoachSidebar'
+import { Rehearse } from './Rehearse'
 
 const newId = () => Math.random().toString(36).slice(2, 10)
 
@@ -27,7 +29,7 @@ function SuggestionChip({ kind, text, onPick, disabled }: { kind: SuggestionKind
   )
 }
 
-export function Coach() {
+function CoachChat() {
   const { inputs, analysis, counters, addCounter, offerKey } = useEvaluation()
   // One conversation per offer: switching offers loads that offer's conversation
   const [conv, setConv] = useState(() => {
@@ -242,6 +244,42 @@ export function Coach() {
         <LogResponseForm onSubmit={(msg) => void send(msg)} disabled={busy || engine === 'connecting'} />
         <NegotiationTimeline />
       </aside>
+    </div>
+  )
+}
+
+type CoachMode = 'chat' | 'rehearse'
+const MODES: { id: CoachMode; label: string; icon: typeof Handshake; hint: string }[] = [
+  { id: 'chat', label: 'Plan replies', icon: MessagesSquare, hint: 'Log what they said, ask what if, get your next move' },
+  { id: 'rehearse', label: 'Rehearse the call', icon: Mic, hint: 'Practice with a simulated recruiter' },
+]
+
+/** Coach has two modes: planning replies with the coach, and rehearsing with a simulated recruiter. */
+export function Coach() {
+  const [params, setParams] = useSearchParams()
+  const mode: CoachMode = params.get('mode') === 'rehearse' ? 'rehearse' : 'chat'
+  return (
+    <div>
+      <div role="tablist" aria-label="Coach mode" className="mb-6 inline-flex rounded-xl border border-ink-200 bg-white p-1 shadow-card">
+        {MODES.map((m) => (
+          <button
+            key={m.id}
+            role="tab"
+            type="button"
+            aria-selected={mode === m.id}
+            title={m.hint}
+            onClick={() => setParams(m.id === 'chat' ? {} : { mode: m.id }, { replace: true })}
+            className={clsx(
+              'inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors',
+              mode === m.id ? 'bg-ink-900 text-white' : 'text-ink-600 hover:text-ink-900',
+            )}
+          >
+            <m.icon className="h-3.5 w-3.5" aria-hidden />
+            {m.label}
+          </button>
+        ))}
+      </div>
+      {mode === 'chat' ? <CoachChat /> : <Rehearse />}
     </div>
   )
 }

@@ -4,20 +4,21 @@ import { Tooltip } from '../ui'
 
 export type SourceKind = 'data' | 'ai' | 'calc' | 'input'
 
-const META: Record<SourceKind, { label: string; tip: string; cls: string; Icon: typeof Database }> = {
-  data: { label: 'Illustrative benchmark', tip: 'Estimated using illustrative benchmark assumptions — not live or verified market data.', cls: 'border-ink-200 bg-ink-50 text-ink-600', Icon: Database },
-  calc: { label: 'Calculated', tip: 'Deterministic calculation from your inputs and the benchmark model. No AI involved.', cls: 'border-ink-200 bg-white text-ink-600', Icon: Calculator },
-  ai: { label: 'AI interpretation', tip: 'AI-generated explanation or suggestion. Treat as one perspective, not a fact.', cls: 'border-pine-200 bg-pine-50 text-pine-700', Icon: Sparkles },
-  input: { label: 'Your input', tip: 'Provided by you. CompPilot does not verify it.', cls: 'border-ink-200 bg-white text-ink-600', Icon: User },
+const META: Record<SourceKind, { label: string; tip: string; Icon: typeof Database }> = {
+  data: { label: 'Illustrative benchmark', tip: 'Estimated from illustrative benchmark assumptions, not live or verified market data.', Icon: Database },
+  calc: { label: 'Calculated', tip: 'A fixed calculation from your inputs and the benchmark model. No AI involved.', Icon: Calculator },
+  ai: { label: 'AI interpretation', tip: 'Written by AI from the calculated results. One perspective, not a fact.', Icon: Sparkles },
+  input: { label: 'Your input', tip: 'Provided by you. CompPilot does not verify it.', Icon: User },
 }
 
+/** A quiet icon that says where a number or text comes from. Details are in the tooltip. */
 export function SourceTag({ kind, className, label }: { kind: SourceKind; className?: string; label?: string }) {
   const m = META[kind]
+  const name = label ?? m.label
   return (
-    <Tooltip content={m.tip}>
-      <span className={cn('inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px] font-medium', m.cls, className)}>
-        <m.Icon className="h-3 w-3" aria-hidden />
-        {label ?? m.label}
+    <Tooltip content={<><strong className="font-semibold">{name}.</strong> {m.tip}</>}>
+      <span className={cn('inline-flex h-5 w-5 items-center justify-center text-ink-400 hover:text-ink-600', className)} aria-label={`Source: ${name}`} role="img">
+        <m.Icon className="h-3.5 w-3.5" aria-hidden />
       </span>
     </Tooltip>
   )

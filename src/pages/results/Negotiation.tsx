@@ -60,14 +60,12 @@ export function Negotiation() {
       {/* Data vs AI */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="p-5">
-          <SourceTag kind="data" label="Benchmark data" />
-          <p className="mt-3 text-sm text-ink-500">Estimated market range</p>
+          <p className="flex items-center gap-1 text-sm text-ink-500">Estimated market range <SourceTag kind="data" /></p>
           <p className="mt-1 text-xl font-semibold text-ink-900 tabular">{k(b.base.p25)}–{k(b.base.p75)} <span className="text-sm font-normal text-ink-400">25th–75th</span></p>
           <p className="mt-1 text-xs text-ink-400">Full illustrative range {k(b.base.low)}–{k(b.base.high)}</p>
         </Card>
         <Card className="border-pine-200 p-5">
-          <SourceTag kind="ai" label="AI recommendation" />
-          <p className="mt-3 text-sm text-ink-500">One reasonable approach</p>
+          <p className="flex items-center gap-1 text-sm text-ink-500">One reasonable approach <SourceTag kind="ai" label="AI recommendation" /></p>
           <p className="mt-1 text-xl font-semibold text-ink-900">Consider targeting <span className="tabular">{k(rec.target)}</span></p>
           <p className="mt-1 text-xs text-ink-400">A suggestion based on your inputs — not a guaranteed outcome</p>
         </Card>

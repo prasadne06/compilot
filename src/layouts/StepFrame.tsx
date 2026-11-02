@@ -1,5 +1,5 @@
-import type { FormEvent, ReactNode } from 'react'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { useId, useState, type FormEvent, type ReactNode } from 'react'
+import { ArrowLeft, ArrowRight, ChevronDown } from 'lucide-react'
 import { Button } from '../components/ui'
 
 interface StepFrameProps {
@@ -39,12 +39,29 @@ export function StepFrame({ eyebrow, title, description, children, onBack, onNex
   )
 }
 
-export function Section({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
+export function Section({ title, description, children, collapsible, defaultOpen = true }: { title: string; description?: string; children: ReactNode; collapsible?: boolean; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen)
+  const id = useId()
+  if (!collapsible)
+    return (
+      <section className="rounded-2xl border border-ink-200/80 bg-white p-5 shadow-card sm:p-6">
+        <h2 className="text-[15px] font-semibold text-ink-900">{title}</h2>
+        {description && <p className="mt-1 text-[13px] text-ink-500">{description}</p>}
+        <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">{children}</div>
+      </section>
+    )
   return (
     <section className="rounded-2xl border border-ink-200/80 bg-white p-5 shadow-card sm:p-6">
-      <h2 className="text-[15px] font-semibold text-ink-900">{title}</h2>
-      {description && <p className="mt-1 text-[13px] text-ink-500">{description}</p>}
-      <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">{children}</div>
+      <h2>
+        <button type="button" aria-expanded={open} aria-controls={id} onClick={() => setOpen((o) => !o)} className="flex w-full items-start justify-between gap-3 text-left">
+          <span>
+            <span className="block text-[15px] font-semibold text-ink-900">{title} <span className="font-normal text-ink-400">(optional)</span></span>
+            {description && <span className="mt-1 block text-[13px] font-normal text-ink-500">{description}</span>}
+          </span>
+          <ChevronDown className={`mt-0.5 h-4 w-4 shrink-0 text-ink-400 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
+        </button>
+      </h2>
+      {open && <div id={id} className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">{children}</div>}
     </section>
   )
 }

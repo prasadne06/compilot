@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import {
-  ArrowRight, BarChart3, Check, FileText, Gauge, Handshake, MessagesSquare, PlayCircle, Scale, ShieldCheck, Sparkles, Target, Upload,
+  ArrowRight, BarChart3, Check, FileText, Gauge, Handshake, MessagesSquare, PlayCircle, Scale, ShieldCheck, Sparkles, Target, Timer,
 } from 'lucide-react'
 import { Button, ButtonLink, Card } from '../components/ui'
 import { MarketRange, Meter, RecommendationBadge } from '../components/comp'
@@ -20,7 +20,7 @@ const STEPS = [
   { icon: Scale, title: 'Understand your leverage', body: 'A transparent breakdown of what strengthens your position, and what might work against it.' },
   { icon: Target, title: 'Know what to ask for', body: 'A recommended target, range, and fallback — plus which levers to pull first, and which to avoid.' },
   { icon: FileText, title: 'Get your script', body: 'Natural, honest scripts for a recruiter call, an email, or a hiring manager — in the tone you prefer.' },
-  { icon: MessagesSquare, title: 'Practice the conversation', body: 'Rehearse with an AI recruiter and get supportive, specific coaching on each response.' },
+  { icon: MessagesSquare, title: 'Coach through each reply', body: 'Log what the company said and get your next move, or rehearse the call with a simulated recruiter.' },
 ]
 
 function SampleAnalysis() {
@@ -109,8 +109,8 @@ export function Landing() {
             </a>
           </div>
           <div className="mt-5 flex flex-col items-start gap-2.5 sm:flex-row sm:items-center sm:gap-6">
-            <Link to="/evaluate/about-you?start=upload" className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-500 underline decoration-ink-300 underline-offset-4 hover:text-ink-900">
-              <Upload className="h-4 w-4" /> Or upload your offer letter (optional)
+            <Link to="/quick" className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-500 underline decoration-ink-300 underline-offset-4 hover:text-ink-900">
+              <Timer className="h-4 w-4" /> Or do a 1-minute quick check
             </Link>
             <button onClick={trySample} className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-500 underline decoration-ink-300 underline-offset-4 hover:text-ink-900">
               <PlayCircle className="h-4 w-4" /> Or explore a sample offer

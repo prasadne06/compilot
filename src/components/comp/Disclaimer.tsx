@@ -4,7 +4,14 @@ import { ShieldCheck } from 'lucide-react'
 export const DISCLAIMER_TEXT =
   'This analysis is an estimate based on the information you provide and benchmark assumptions. Compensation varies by company, role, location, experience, market conditions, and individual circumstances. This information is for decision support and should not be treated as a guarantee of market value or financial advice.'
 
-export function Disclaimer({ variant = 'full', className }: { variant?: 'full' | 'compact'; className?: string }) {
+export function Disclaimer({ variant = 'full', className }: { variant?: 'full' | 'compact' | 'line'; className?: string }) {
+  if (variant === 'line')
+    return (
+      <p className={cn('flex items-start gap-2 text-xs leading-relaxed text-ink-400', className)}>
+        <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+        <span>Estimates from illustrative benchmark assumptions, not live market data. Decision support only, not a guarantee or financial advice.</span>
+      </p>
+    )
   if (variant === 'compact')
     return (
       <p className={cn('flex items-start gap-2 text-xs leading-relaxed text-ink-500', className)}>

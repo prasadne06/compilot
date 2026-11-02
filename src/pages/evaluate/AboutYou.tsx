@@ -82,7 +82,7 @@ export function AboutYou() {
         </Field>
       </Section>
 
-      <Section title="Current compensation" description="Optional, but it lets us show how much this offer changes your situation.">
+      <Section title="Current compensation" description="Shows how much this offer changes your pay." collapsible defaultOpen={[p.employmentStatus, p.currentBase, p.currentBonus, p.currentEquity, p.currentTotalComp].some((v) => v !== undefined && v !== '')}>
         <Field label="Current employment status" htmlFor="status" className="sm:col-span-2">
           <Select id="status" options={EMPLOYMENT_OPTIONS} value={p.employmentStatus} onValueChange={(v) => updateProfile({ employmentStatus: v as EmploymentStatus })} />
         </Field>

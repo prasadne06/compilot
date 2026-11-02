@@ -11,8 +11,8 @@ import { Overview } from './pages/results/Overview'
 import { Market } from './pages/results/Market'
 import { Negotiation } from './pages/results/Negotiation'
 import { Scripts } from './pages/results/Scripts'
-import { Practice } from './pages/Practice'
 import { Coach } from './pages/results/coach/Coach'
+import { QuickCheck } from './pages/QuickCheck'
 import { SettingsPage } from './pages/Settings'
 import { NotFound } from './pages/NotFound'
 import { ErrorBoundary } from './layouts/ErrorBoundary'
@@ -39,9 +39,11 @@ export default function App() {
               <Route path="results/market" element={<Market />} />
               <Route path="results/negotiation" element={<Negotiation />} />
               <Route path="results/scripts" element={<Scripts />} />
-              <Route path="practice" element={<Practice />} />
               <Route path="results/coach" element={<Coach />} />
             </Route>
+            {/* Practice now lives inside the coach */}
+            <Route path="practice" element={<Navigate to="/results/coach?mode=rehearse" replace />} />
+            <Route path="quick" element={<QuickCheck />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="*" element={<NotFound />} />
           </Route>

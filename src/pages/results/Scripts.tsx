@@ -100,7 +100,7 @@ export function Scripts() {
           <p className="text-base font-semibold">Practice before the real thing</p>
           <p className="mt-1 text-sm text-ink-300">Rehearse with an AI recruiter and get coaching on each response.</p>
         </div>
-        <ButtonLink to="/practice" variant="secondary" iconRight={<ArrowRight className="h-4 w-4" />}>Start practicing</ButtonLink>
+        <ButtonLink to="/results/coach?mode=rehearse" variant="secondary" iconRight={<ArrowRight className="h-4 w-4" />}>Start practicing</ButtonLink>
       </div>
     </div>
   )
