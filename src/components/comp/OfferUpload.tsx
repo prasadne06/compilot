@@ -1,8 +1,10 @@
 import { useRef, useState, type DragEvent } from 'react'
 import { cn } from '../../lib/cn'
-import { AlertTriangle, CircleCheck, FileCheck2, FileText, Lock, Upload } from 'lucide-react'
+import { AlertTriangle, CircleCheck, FileCheck2, FileText, Upload } from 'lucide-react'
 import { ACCEPTED_FILE_TYPES, DocumentReadError, extractDocumentText } from '../../services/documents/textExtraction'
-import { extractOfferDetails, getProviderInfo } from '../../services/ai'
+import { extractOfferDetails } from '../../services/ai'
+import { useUploadConsent } from '../../state/uploadConsent'
+import { UploadNotice, WhatHappensLink } from './UploadPrivacy'
 import { useEvaluation } from '../../state/EvaluationContext'
 import { useAutofill } from '../../state/useAutofill'
 import { Button, LoadingState } from '../ui'
@@ -79,7 +81,9 @@ export function OfferUpload({ section, compact = false }: { section: 'profile' |
   const [dragging, setDragging] = useState(false)
   const [expanded, setExpanded] = useState(!compact)
   const inputRef = useRef<HTMLInputElement>(null)
-  const remote = getProviderInfo().mode === 'remote'
+  const [consented, setConsented] = useUploadConsent()
+  // Keep the notice (and its tick) visible for this visit once shown; skip it on later visits
+  const [showNotice] = useState(!consented)
 
   const handleFile = async (file: File) => {
     setPhase({ name: 'reading', fileName: file.name })
@@ -137,11 +141,13 @@ export function OfferUpload({ section, compact = false }: { section: 'profile' |
     <section aria-label="Upload your offer letter" className="rounded-2xl border border-ink-200/80 bg-white p-5 shadow-card sm:p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-[15px] font-semibold text-ink-900">Start from your offer letter</h2>
-          <p className="mt-1 text-[13px] text-ink-500">Optional. We’ll fill in what we find, and show where each value came from so you can confirm it.</p>
+          <h2 className="text-[15px] font-semibold text-ink-900">Upload your offer letter <span className="font-normal text-ink-400">(optional)</span></h2>
+          <p className="mt-1 text-[13px] text-ink-500">We’ll fill in what we find, and show where each value came from so you can confirm it.</p>
         </div>
         {autofill && !busy && <Button size="sm" variant="ghost" onClick={() => { setExpanded(false); setPhase({ name: 'idle' }) }}>Cancel</Button>}
       </div>
+
+      {!busy && showNotice && <UploadNotice consented={consented} onConsent={setConsented} />}
 
       {busy ? (
         <div className="mt-5 rounded-xl border border-ink-200 bg-ink-50/60 p-5">
@@ -150,18 +156,19 @@ export function OfferUpload({ section, compact = false }: { section: 'profile' |
       ) : (
         <label
           htmlFor="offer-file"
-          onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+          aria-disabled={!consented}
+          onDragOver={(e) => { e.preventDefault(); if (consented) setDragging(true) }}
           onDragLeave={() => setDragging(false)}
-          onDrop={onDrop}
+          onDrop={(e) => (consented ? onDrop(e) : e.preventDefault())}
           className={cn(
-            'mt-5 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-8 text-center transition-colors focus-within:ring-2 focus-within:ring-pine-500',
-            dragging ? 'border-pine-500 bg-pine-50' : 'border-ink-200 bg-ink-50/50 hover:border-ink-300 hover:bg-ink-50',
+            'mt-5 flex flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-8 text-center transition-colors focus-within:ring-2 focus-within:ring-pine-500',
+            !consented ? 'cursor-not-allowed border-ink-200 bg-ink-50/50 opacity-50' : dragging ? 'cursor-pointer border-pine-500 bg-pine-50' : 'cursor-pointer border-ink-200 bg-ink-50/50 hover:border-ink-300 hover:bg-ink-50',
           )}
         >
-          <input ref={inputRef} id="offer-file" type="file" accept={ACCEPTED_FILE_TYPES} className="sr-only" onChange={(e) => e.target.files?.[0] && void handleFile(e.target.files[0])} />
+          <input ref={inputRef} id="offer-file" type="file" accept={ACCEPTED_FILE_TYPES} disabled={!consented} className="sr-only" onChange={(e) => e.target.files?.[0] && void handleFile(e.target.files[0])} />
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-ink-700 shadow-card ring-1 ring-ink-200"><Upload className="h-4 w-4" aria-hidden /></span>
           <span className="mt-3 text-sm font-medium text-ink-900">Drop your offer letter here, or <span className="text-pine-700 underline underline-offset-4">choose a file</span></span>
-          <span className="mt-1 text-xs text-ink-500">PDF or Word (.docx), up to 10 MB</span>
+          <span className="mt-1 text-xs text-ink-500">{consented ? 'PDF or Word (.docx), up to 10 MB · US offers only for now' : 'Tick “I understand” above to upload'}</span>
         </label>
       )}
 
@@ -173,14 +180,10 @@ export function OfferUpload({ section, compact = false }: { section: 'profile' |
       )}
 
       <div className="mt-4 flex flex-col gap-2 text-xs text-ink-500 sm:flex-row sm:items-center sm:justify-between">
-        <p className="flex items-start gap-1.5">
-          <Lock className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />
-          {remote
-            ? 'Your file is read in your browser. Only its text is sent to the configured AI service to find the details.'
-            : 'Your file is read in your browser and never uploaded anywhere.'}
-        </p>
+        {consented ? <WhatHappensLink /> : <span />}
+        {/* The sample letter is fictional, so it doesn't need the upload notice */}
         <button type="button" onClick={trySample} disabled={busy} className="shrink-0 self-start font-medium text-ink-600 underline decoration-ink-300 underline-offset-4 hover:text-ink-900 disabled:opacity-50 sm:self-auto">
-          No letter handy? Try a sample
+          No letter handy? Try a fictional sample
         </button>
       </div>
     </section>

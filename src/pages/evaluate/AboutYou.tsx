@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Wand2 } from 'lucide-react'
 import { Button, CurrencyInput, Field, Input, NumberInput, Segmented, Select } from '../../components/ui'
 import { Section, StepFrame } from '../../layouts/StepFrame'
 import { useEvaluation } from '../../state/EvaluationContext'
 import { useAutofill } from '../../state/useAutofill'
-import { AutofillNudge, OfferUpload } from '../../components/comp'
+import { AutofillNudge, OfferUpload, StartChoice, type StartMode } from '../../components/comp'
 import { validateAboutYou } from '../../engine'
 import {
   ARRANGEMENT_OPTIONS, EMPLOYMENT_OPTIONS, INDUSTRY_OPTIONS, LEVEL_OPTIONS, LOCATION_OPTIONS, TITLE_SUGGESTIONS,
@@ -20,6 +20,9 @@ export function AboutYou() {
   const [attempted, setAttempted] = useState(false)
   const [nudged, setNudged] = useState(false)
   const af = useAutofill('profile')
+  // Manual entry is the default; upload is an equal, optional alternative
+  const [params] = useSearchParams()
+  const [mode, setMode] = useState<StartMode>(() => (af.autofill || params.get('start') === 'upload' ? 'upload' : 'manual'))
   const { errors, valid } = validateAboutYou(inputs)
   const err = (key: string) => (attempted ? errors[key] : undefined)
 
@@ -47,7 +50,8 @@ export function AboutYou() {
       }}
     >
       {nudged && af.pending.length > 0 && <AutofillNudge count={af.pending.length} onConfirm={af.confirmSection} />}
-      <OfferUpload section="profile" />
+      <StartChoice mode={mode} onChange={setMode} />
+      {mode === 'upload' && <OfferUpload section="profile" />}
 
       <Section title="Your role">
         <Field label="Job title" htmlFor="jobTitle" error={err('jobTitle')} className="sm:col-span-2" autofill={af.field('profile.jobTitle')}>
@@ -69,7 +73,7 @@ export function AboutYou() {
       </Section>
 
       <Section title="Where you work">
-        <Field label="Location" htmlFor="location" error={err('location')} hint="Where the role is based (or your location, if remote)" autofill={af.field('profile.location')}>
+        <Field label="Location" htmlFor="location" error={err('location')} hint="Where the role is based (or your location, if remote). US offers only for now; other countries are planned." autofill={af.field('profile.location')}>
           <Select id="location" options={LOCATION_OPTIONS} value={p.location} invalid={!!err('location')} onValueChange={(v) => updateProfile({ location: v })} />
         </Field>
         <Field label="Current work arrangement">

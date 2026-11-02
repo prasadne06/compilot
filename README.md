@@ -23,6 +23,10 @@ On the first two steps you can upload an offer letter (**PDF** or **Word .docx**
 3. Values go straight into the form. Each filled field shows the sentence it came from, with **Looks right** and **Clear** buttons; editing the value also confirms it. Uncertain values (inferred or converted) are marked "double-check" with the reason.
 4. A panel at the top of each page tracks progress ("3 of 13 confirmed"), offers **Confirm all on this page**, and lists anything the letter didn't state clearly. Continuing with unconfirmed fields shows a reminder. Uploading a different file replaces the earlier values.
 
+**Privacy.** Uploading is optional: step 1 offers *Enter details* (default) or *Upload offer letter*. Before the first upload the user sees a short notice and ticks "I understand" (remembered in the browser); a "What happens to my file?" link explains each step. Files are read in the browser and never kept. Before anything is saved or sent to an AI service, personal details (recipient and signer names, email, phone, street address, ZIP, ID numbers) are removed (`src/services/documents/redact.ts`). City, company, role and pay stay, because the analysis needs them.
+
+**US only for now.** Locations are US metros, Remote (US) and Other US; letters with £/€/₹, Indian or UK pay terms, or a non-US city get a clear "US offers only" message.
+
 Not supported: old `.doc` files and scanned (image-only) PDFs. Both get a clear message suggesting what to do instead. Sample letters for testing are in `public/samples/`.
 
 ## Negotiation coach (agentic)

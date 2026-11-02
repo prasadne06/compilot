@@ -1,5 +1,6 @@
 import type { AutofillKey, CompanyStage, ExtractedField, JobLevel, MatchQuality, OfferExtraction, WorkArrangement } from '../../types'
 import { isObj, isStr, runTask, type AIResult } from './provider'
+import { findRecipientName, findSignerName, redactPersonalDetails } from '../documents/redact'
 
 // ---------------------------------------------------------------------------
 // Deterministic offer-letter parser (mock for the `offer_extraction` AI task).
@@ -302,6 +303,13 @@ export function parseOfferText(text: string): OfferExtraction {
   if (/commuter/i.test(text)) benefits.push('Commuter benefits')
   if (benefits.length) add('offer.benefitsNotes', benefits.join('; '), 'medium', 'Summarized from the benefits mentioned in your letter.')
 
+  const foreign = text.match(/[£€₹]|\b(?:GBP|EUR|INR|Rs\.?|lakhs?|LPA|crores?|CTC)\b/i)
+  const foreignCity = text.match(/\b(London|Manchester|Edinburgh|Bengaluru|Bangalore|Hyderabad|Pune|Mumbai|Chennai|Gurugram|Gurgaon|Noida|Delhi|Toronto|Berlin|Dublin|Singapore|Sydney)\b/)
+  if (foreign || (foreignCity && !fields.some((f) => f.key === 'profile.location')))
+    warnings.unshift(
+      `This looks like a non-US offer${foreign ? ` (it mentions ${foreign[0]})` : ` (based in ${foreignCity![1]})`}. CompPilot currently supports US offers in US dollars only, so the results may not apply. Support for other countries is planned.`,
+    )
+
   if (fields.length > 0 && fields.length < 4) warnings.push('We found only a few details. The letter may use unusual wording, so please check the remaining fields manually.')
   return { fields, warnings }
 }
@@ -312,7 +320,15 @@ const isExtraction = (v: unknown): v is OfferExtraction =>
   isObj(v) && Array.isArray(v.warnings) && Array.isArray(v.fields) &&
   v.fields.every((f) => isObj(f) && isStr(f.key) && (isStr(f.value) || typeof f.value === 'number') && isStr(f.confidence) && isStr(f.evidence))
 
-/** Extracts structured offer details from letter text. Only the text is sent to an LLM endpoint, never the file. */
-export function extractOfferDetails(text: string): Promise<AIResult<OfferExtraction>> {
-  return runTask('offer_extraction', { text: text.slice(0, 20_000) }, { mock: () => parseOfferText(text), validate: isExtraction, latencyMs: 600 })
+/**
+ * Extracts structured offer details from letter text. The local parser reads the full text on the
+ * device; an AI service only ever receives the text with personal details removed, never the file.
+ * Evidence sentences are cleaned the same way before they are kept.
+ */
+export async function extractOfferDetails(text: string): Promise<AIResult<OfferExtraction>> {
+  const names = [findRecipientName(text) ?? '', findSignerName(text) ?? '']
+  const redacted = redactPersonalDetails(text, names)
+  const result = await runTask('offer_extraction', { text: redacted.slice(0, 20_000) }, { mock: () => parseOfferText(text), validate: isExtraction, latencyMs: 600 })
+  const fields = result.data.fields.map((f) => ({ ...f, evidence: redactPersonalDetails(f.evidence, names) }))
+  return { ...result, data: { ...result.data, fields } }
 }

@@ -83,7 +83,6 @@ export const LOCATIONS: LocationInfo[] = [
   { id: 'atl', label: 'Atlanta, GA', factor: 0.94, match: 'medium' },
   { id: 'remote_us', label: 'Remote (US)', factor: 0.96, match: 'medium' },
   { id: 'other_us', label: 'Other US location', factor: 0.88, match: 'medium' },
-  { id: 'outside_us', label: 'Outside the US', factor: 0.75, match: 'low' },
 ]
 
 export interface IndustryInfo {

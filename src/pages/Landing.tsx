@@ -109,15 +109,15 @@ export function Landing() {
             </a>
           </div>
           <div className="mt-5 flex flex-col items-start gap-2.5 sm:flex-row sm:items-center sm:gap-6">
-            <Link to="/evaluate/about-you" className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-500 underline decoration-ink-300 underline-offset-4 hover:text-ink-900">
-              <Upload className="h-4 w-4" /> Upload your offer letter to autofill
+            <Link to="/evaluate/about-you?start=upload" className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-500 underline decoration-ink-300 underline-offset-4 hover:text-ink-900">
+              <Upload className="h-4 w-4" /> Or upload your offer letter (optional)
             </Link>
             <button onClick={trySample} className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-500 underline decoration-ink-300 underline-offset-4 hover:text-ink-900">
               <PlayCircle className="h-4 w-4" /> Or explore a sample offer
             </button>
           </div>
           <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-ink-500">
-            {['Takes about 4 minutes', 'Your data stays in your browser', 'No sign-up'].map((t) => (
+            {['For US-based offers', 'Takes about 4 minutes', 'Your data stays in your browser', 'No sign-up'].map((t) => (
               <li key={t} className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-pine-600" /> {t}</li>
             ))}
           </ul>
