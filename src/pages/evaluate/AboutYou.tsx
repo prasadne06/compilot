@@ -20,9 +20,10 @@ export function AboutYou() {
   const [attempted, setAttempted] = useState(false)
   const [nudged, setNudged] = useState(false)
   const af = useAutofill('profile')
-  // Manual entry is the default; upload is an equal, optional alternative
+  // "Enter details" is always selected when the step opens; upload is chosen explicitly
+  // (or preselected only by the landing page's "upload your offer letter" link)
   const [params] = useSearchParams()
-  const [mode, setMode] = useState<StartMode>(() => (af.autofill || params.get('start') === 'upload' ? 'upload' : 'manual'))
+  const [mode, setMode] = useState<StartMode>(() => (params.get('start') === 'upload' ? 'upload' : 'manual'))
   const { errors, valid } = validateAboutYou(inputs)
   const err = (key: string) => (attempted ? errors[key] : undefined)
 
